@@ -1,6 +1,8 @@
 from pydantic import BaseModel
+from fastapi import FastAPI
 from typing import Optional
 
+app = FastAPI()
 
 class ProjectModel(BaseModel):
     id: int

@@ -13,7 +13,7 @@ class BlogPost(SQLModel, table=True):
     tags: list[str] = []
     published: bool = True
     views: int = 0
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=datetime.now())
 
         
     

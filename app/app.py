@@ -6,40 +6,6 @@ from pydantic import BaseModel
     
 app = FastAPI()
 
-fake_db = [
-    {
-        "id": 1,
-        "name": "Sample Project",
-        "description": "This is a sample project.",
-        "techStack": ["FastAPI", "SQLModel"],
-        "status": "In Progress",
-        "link": "https://example.com",
-        "githubLink": ""},
-    {
-        "id": 1,
-        "name": "Sample Project",
-        "description": "This is a sample project.",
-        "techStack": ["FastAPI", "SQLModel"],
-        "status": "In Progress",
-        "link": "https://example.com",
-        "githubLink": ""},
-    {
-        "id": 1,
-        "name": "Sample Project",
-        "description": "This is a sample project.",
-        "techStack": ["FastAPI", "SQLModel"],
-        "status": "In Progress",
-        "link": "https://example.com",
-        "githubLink": ""},
-    {
-        "id": 1,
-        "name": "Sample Project",
-        "description": "This is a sample project.",
-        "techStack": ["FastAPI", "SQLModel"],
-        "status": "In Progress",
-        "link": "https://example.com",
-        "githubLink": ""}]
-
 
 @app.get("/")
 async def root():
@@ -66,10 +32,6 @@ async def create_blog_post(blog_post: BlogPost):
         
     return blog_post_dict
 
-@app.get("/projects/")
-async def read_projects(skip: int = 0, limit: int = 10):
-    return fake_db[skip: skip + limit]
-
 @app.get("/projects/{project_id}")
 async def read_project(project_id: int):
     if project_id == 1:
@@ -84,23 +46,6 @@ async def read_project(project_id: int):
     else: 
         return {"error": "Project not found"}
 
-fake_db = [
-    {"urun_id": 1, "ad": "Laptop", "fiyat": 999.99, "stok": True}, 
-    {"urun_id": 2, "ad": "Telefon", "fiyat": 499.99, "stok": True}, 
-    {"urun_id": 3, "ad": "Tablet", "fiyat": 299.99, "stok": False}, 
-    {"urun_id": 4, "ad": "Kulaklık", "fiyat": 199.99, "stok": True}
-]
-
-
 @app.get("/ara")
 async def ara(kelime: str, limit: int = 10):
     return {"kelime": kelime, "limit": limit}
-
-class Makale(BaseModel):
-    baslik: str
-    icerik: str
-
-
-@app.put("/makaleler/{makale_id}")
-async def makale_guncelle(makale_id: int, makale: Makale, yayinla: bool = False):
-    return {"mesaj": "Makale başarıyla güncellendi", "hedef_id": makale_id, "veri": makale, "hemen_yayinla": yayinla}

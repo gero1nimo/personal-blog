@@ -5,9 +5,8 @@ from app.schemas.blog import BlogPost
 from app.schemas.profile import ProfileModel
 from pydantic import BaseModel
 
-
-    
 app = FastAPI()
+
 
 # Add CORS middleware
 app.add_middleware(

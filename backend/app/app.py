@@ -1,51 +1,54 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from app.schemas.project import ProjectModel
 from app.schemas.blog import BlogPost
+from app.schemas.profile import ProfileModel
 from pydantic import BaseModel
+
 
     
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Default profile data (in production, this would come from a database)
+profile_data = {
+    "id": 1,
+    "name": "Mehmet Akif",
+    "title": "Backend Developer & DevOps Enthusiast",
+    "profile_image": None,  # URL to profile image
+    "years_experience": 3,
+    "projects_count": 15,
+    "available_for_hire": True,
+    "github_url": "https://github.com",
+    "linkedin_url": "https://linkedin.com",
+    "email": "mehmetayzit351@gmail.com"
+}
 
 
 @app.get("/")
 async def root():
     return {"message": "Hello, World!"}
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: int):
-    return {"item_id": item_id}
 
+@app.get("/profile/")
+async def get_profile():
+    return profile_data
 
-@app.post("/projects/")
-async def create_project(project: ProjectModel):
-    project_dict = project.model_dump()
-    if project.id:
-        project_dict["id"] = 1
-        
-    return project_dict 
+@app.put("/profile/")
+async def update_profile(profile: ProfileModel):
+    global profile_data
+    profile_data = profile.model_dump()
+    profile_data["id"] = 1
+    return profile_data
 
-@app.post("/blogposts/")
-async def create_blog_post(blog_post: BlogPost):
-    blog_post_dict = blog_post.model_dump()
-    if blog_post.id:
-        blog_post_dict["id"] = 1
-        
-    return blog_post_dict
-
-@app.get("/projects/{project_id}")
-async def read_project(project_id: int):
-    if project_id == 1:
-        return {
-            "id": 1,
-            "name": "Sample Project",
-            "description": "This is a sample project.",
-            "techStack": ["FastAPI", "SQLModel"],
-            "status": "In Progress",
-            "link": "https://example.com",
-            "githubLink": ""}
-    else: 
-        return {"error": "Project not found"}
-
-@app.get("/ara")
-async def ara(kelime: str, limit: int = 10):
-    return {"kelime": kelime, "limit": limit}
+@app.get("/projects/")
+async def get_projects():
+    return projects_data

@@ -1,3 +1,16 @@
-import sqlalchemy
+import mysql.connector
+from mysql.connector import Error
 
-connection = sqlalchemy.create_engine("sqlite:///./db.sqlite3", echo=True)
+def create_connection(): 
+    try: 
+        connection = mysql.connector.connect(
+            host='localhost',
+            port = 3306,
+            database='mydatabase',
+            user='root',
+            password=''
+        )
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+        return None
+    return connection

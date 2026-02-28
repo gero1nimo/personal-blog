@@ -1,88 +1,132 @@
 const SkillsSection = () => {
   const skillCategories = [
     {
-      title: 'Frontend',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
-      skills: ['React.js', 'JavaScript', 'TypeScript', 'HTML5', 'CSS3', 'Tailwind CSS'],
-      color: 'from-blue-500 to-cyan-500',
+      title: 'USING NOW',
+      description: 'Technologies I work with daily',
+      skills: [
+        { name: 'Python', level: 95 },
+        { name: 'FastAPI', level: 90 },
+        { name: 'Docker', level: 88 },
+        { name: 'Laravel', level: 85 },
+        { name: 'PHP', level: 82 },
+        { name: 'Git', level: 90 },
+        { name: 'Tailwind CSS', level: 80 },
+      ],
+      color: 'blue',
     },
     {
-      title: 'Backend',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-        </svg>
-      ),
-      skills: ['Python', 'FastAPI', 'Node.js', 'Express.js', 'REST APIs', 'GraphQL'],
-      color: 'from-green-500 to-emerald-500',
+      title: 'LEARNING',
+      description: 'Currently expanding knowledge',
+      skills: [
+        { name: 'Reinforcement Learning', level: 45 },
+        { name: 'Kubernetes', level: 40 },
+        { name: 'AWS', level: 50 },
+      ],
+      color: 'purple',
     },
     {
-      title: 'Database',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-        </svg>
-      ),
-      skills: ['PostgreSQL', 'MongoDB', 'MySQL', 'Redis', 'SQLite', 'SQLModel'],
-      color: 'from-purple-500 to-violet-500',
-    },
-    {
-      title: 'Tools & Cloud',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-        </svg>
-      ),
-      skills: ['Git', 'Docker', 'AWS', 'Vercel', 'GitHub Actions', 'Linux'],
-      color: 'from-orange-500 to-amber-500',
+      title: 'OTHER SKILLS',
+      description: 'Complementary expertise',
+      skills: [
+        { name: 'Project Management', level: 85 },
+        { name: 'Calculus', level: 75 },
+        { name: 'System Design', level: 80 },
+      ],
+      color: 'pink',
     },
   ];
 
+  const colorMap = {
+    blue: { bg: 'bg-blue-400/20', fill: 'bg-blue-400', text: 'text-blue-400', border: 'border-blue-400/30' },
+    purple: { bg: 'bg-purple-400/20', fill: 'bg-purple-400', text: 'text-purple-400', border: 'border-purple-400/30' },
+    pink: { bg: 'bg-pink-400/20', fill: 'bg-pink-400', text: 'text-pink-400', border: 'border-pink-400/30' },
+  };
+
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="skills" className="relative py-24 md:py-32 bg-gradient-to-b from-gray-900 via-gray-900 to-black overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-8 md:px-16 relative">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Skills & Technologies
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-3 mb-6">
+            <div className="w-12 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
+            <span className="text-blue-400 text-xs tracking-[0.3em] uppercase font-medium">What I Bring</span>
+            <div className="w-12 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
+          </div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+            Skills & <span className="gradient-text-accent">Expertise</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            A comprehensive toolkit I use to build modern, scalable applications
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            A comprehensive toolkit built over years of hands-on experience in backend development and DevOps
           </p>
         </div>
 
         {/* Skills Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {skillCategories.map((category, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300"
-            >
-              {/* Category Header */}
-              <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${category.color} flex items-center justify-center text-white mb-4`}>
-                {category.icon}
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                {category.title}
-              </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {skillCategories.map((category, index) => {
+            const colors = colorMap[category.color];
+            return (
+              <div 
+                key={index} 
+                className={`relative p-8 rounded-2xl border ${colors.border} bg-white/[0.02] backdrop-blur-sm card-hover`}
+              >
+                {/* Category Header */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`w-3 h-3 ${colors.fill} rounded-full`}></div>
+                  <div>
+                    <h3 className={`text-lg font-semibold ${colors.text} tracking-wider`}>
+                      {category.title}
+                    </h3>
+                    <p className="text-gray-500 text-xs mt-1">{category.description}</p>
+                  </div>
+                </div>
 
-              {/* Skills List */}
-              <div className="flex flex-wrap gap-2">
-                {category.skills.map((skill, skillIndex) => (
-                  <span
-                    key={skillIndex}
-                    className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors"
-                  >
-                    {skill}
-                  </span>
-                ))}
+                {/* Skills List */}
+                <div className="space-y-5">
+                  {category.skills.map((skill, skillIndex) => (
+                    <div key={skillIndex} className="group">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-300 text-sm group-hover:text-white transition-colors">
+                          {skill.name}
+                        </span>
+                        <span className={`text-xs ${colors.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                          {skill.level}%
+                        </span>
+                      </div>
+                      <div className={`h-1.5 ${colors.bg} rounded-full overflow-hidden`}>
+                        <div 
+                          className={`h-full ${colors.fill} rounded-full transition-all duration-1000 ease-out`}
+                          style={{ width: `${skill.level}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Decorative corner */}
+                <div className={`absolute top-0 right-0 w-20 h-20 ${colors.bg} rounded-bl-3xl -z-10 opacity-50`}></div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-20 text-center">
+          <p className="text-gray-500 mb-6">Want to know more about my technical background?</p>
+          <a 
+            href="/about" 
+            className="inline-flex items-center gap-3 text-white hover:text-blue-400 transition-colors group"
+          >
+            <span className="text-sm tracking-widest">VIEW FULL RESUME</span>
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
         </div>
       </div>
     </section>

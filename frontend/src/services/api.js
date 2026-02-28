@@ -41,4 +41,16 @@ export const blogApi = {
   },
 };
 
+// Profile API
+export const profileApi = {
+  get: async () => {
+    const response = await api.get('/profile/');
+    return response.data;
+  },
+  update: async (profile) => {
+    const response = await api.put('/profile/', profile);
+    return response.data;
+  },
+};
+
 export default api;

@@ -100,12 +100,12 @@ const Hero = () => {
             <div className={`flex items-center gap-4 mb-8 ${isLoaded ? 'animate-slide-in-left animation-delay-400' : 'opacity-0'}`}>
               <div className="w-12 h-px bg-gradient-to-r from-blue-400 to-purple-400"></div>
               <p className="text-gray-400 text-sm md:text-base font-light tracking-wide">
-                Backend Developer & DevOps Enthusiast
+                Backend Developer | Open to Opportunities
               </p>
             </div>
 
             {/* Stats */}
-            <div className={`grid grid-cols-3 gap-6 mb-10 ${isLoaded ? 'animate-slide-in-left animation-delay-600' : 'opacity-0'}`}>
+            {/* <div className={`grid grid-cols-3 gap-6 mb-10 ${isLoaded ? 'animate-slide-in-left animation-delay-600' : 'opacity-0'}`}>
               <div className="group">
                 <div className="text-2xl md:text-3xl font-bold text-white group-hover:text-blue-400 transition-colors">
                   {profile?.years_experience || 3}+
@@ -122,11 +122,11 @@ const Hero = () => {
                 <div className="text-2xl md:text-3xl font-bold text-white group-hover:text-pink-400 transition-colors">100%</div>
                 <div className="text-gray-500 text-xs tracking-wider uppercase">Dedication</div>
               </div>
-            </div>
+            </div> */}
 
             {/* Social Icons */}
             <div className={`flex items-center space-x-5 ${isLoaded ? 'animate-slide-in-left animation-delay-800' : 'opacity-0'}`}>
-              <span className="text-gray-600 text-xs tracking-widest">CONNECT</span>
+              <span className="text-gray-200 text-xs tracking-widest">CONNECT</span>
               <div className="w-8 h-px bg-gray-700"></div>
               {/* GitHub */}
               <a href={profile?.github_url || "https://github.com"} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1">

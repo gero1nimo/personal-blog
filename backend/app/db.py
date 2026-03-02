@@ -1,16 +1,41 @@
-import mysql.connector
-from mysql.connector import Error
+import psycopg
 
-def create_connection(): 
-    try: 
-        connection = mysql.connector.connect(
-            host='localhost',
-            port = 3306,
-            database='mydatabase',
-            user='root',
-            password=''
-        )
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
+db_parameters = {
+    "host": "localhost",
+    "port": 5432,
+    "dbname": "postgres",
+    "user": "postgres",
+    "password": "Ayzit56"
+}
+
+def db_connection():
+    try:
+        connection = psycopg.connect(**db_parameters)
+        return connection
+    except Exception as e:
+        print(f"Error connecting to the database: {e}")
         return None
-    return connection
+
+
+def execute_query(query, params=None):
+    connection = db_connection()
+    if connection is None:
+        return None
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            connection.commit()
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        return None
+    finally:
+        connection.close()  
+        
+query = "SELECT * FROM projects"
+results = execute_query(query)
+if results is not None:
+    for row in results:
+        print(row)
+        

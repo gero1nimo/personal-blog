@@ -1,7 +1,8 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
+from sqlalchemy import Column, Integer, String, Text, Boolean, ARRAY
 
-class projectModel(SQLModel, table=True):
+class ProjectModel(SQLModel, table=True):
     __tablename__ = "projects"
     
     
@@ -9,8 +10,8 @@ class projectModel(SQLModel, table=True):
     name: str = Field(index=True, unique=True)
     slug: str = Field(index=True, unique=True)
     description: str
-    tags: list[str] = []
-    techStack: list[str] = []
+    tags: list[str] = Field(default=[], sa_column=Column(ARRAY(String)))
+    techStack: list[str] = Field(default=[], sa_column=Column(ARRAY(String)))
     status: str
     link: Optional[str] = None
     githubLink: Optional[str] = None

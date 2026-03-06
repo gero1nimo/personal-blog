@@ -1,12 +1,13 @@
 from pydantic import BaseModel
-from fastapi import FastAPI
 from typing import Optional
 
 
-class ProjectModel(BaseModel):
+class ProjectModelSchema(BaseModel):
     id: int
     name: str
+    slug: str
     description: str
+    tags: list[str] = []
     techStack: list[str] = []
     status: str
     link: Optional[str] = None

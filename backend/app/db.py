@@ -1,4 +1,6 @@
 import psycopg
+from app.models import project, blog
+from sqlmodel import SQLModel, create_engine, Session, select
 
 db_parameters = {
     "host": "localhost",
@@ -8,34 +10,19 @@ db_parameters = {
     "password": "Ayzit56"
 }
 
-def db_connection():
+db_engine = create_engine(f"postgresql+psycopg://{db_parameters['user']}:{db_parameters['password']}@{db_parameters['host']}:{db_parameters['port']}/{db_parameters['dbname']}")
+SQLModel.metadata.create_all(db_engine)
+
+
+def db_dependency():
+    db_session = Session(db_engine)
     try:
-        connection = psycopg.connect(**db_parameters)
-        return connection
+        yield db_session
     except Exception as e:
-        print(f"Error connecting to the database: {e}")
-        return None
-
-
-def execute_query(query, params=None):
-    connection = db_connection()
-    if connection is None:
-        return None
-
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query, params)
-            connection.commit()
-            return cursor.fetchall()
-    except Exception as e:
-        print(f"Error executing query: {e}")
-        return None
+        print(f"Database error: {e}")
+        
     finally:
-        connection.close()  
-        
-query = "SELECT * FROM projects"
-results = execute_query(query)
-if results is not None:
-    for row in results:
-        print(row)
-        
+        db_session.close()
+    
+
+

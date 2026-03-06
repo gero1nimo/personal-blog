@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const ProjectCard = ({ project }) => {
-  const { id, name, description, techStack = [], status, link, githubLink, featured } = project;
+  const { id, name, slug, description, tags = [], techStack = [], status, link, githubLink, livedemo, featured } = project;
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -14,7 +14,7 @@ const ProjectCard = ({ project }) => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
+  };  
 
   return (
     <div className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden ${featured ? 'ring-2 ring-indigo-500' : ''}`}>

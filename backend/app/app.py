@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.schemas.project import ProjectModel
-from app.schemas.blog import BlogPost
-from app.schemas.profile import ProfileModel
+from app.schemas.project import ProjectModelSchema
+from app.schemas.blog import BlogPostSchema
+from app.schemas.profile import ProfileModelSchema
+from app.models import ProjectModel, BlogPost
 from pydantic import BaseModel
+from app.db import db_dependency
+from sqlmodel import select
 
 app = FastAPI()
 
@@ -42,12 +45,44 @@ async def get_profile():
     return profile_data
 
 @app.put("/profile/")
-async def update_profile(profile: ProfileModel):
+async def update_profile(profile: ProfileModelSchema):
     global profile_data
     profile_data = profile.model_dump()
     profile_data["id"] = 1
     return profile_data
 
-@app.get("/projects/")
-async def get_projects():
-    return projects_data
+@app.get("/projects/", response_model=list[ProjectModelSchema])
+async def get_projects(session = Depends(db_dependency)):
+    results = session.exec(select(ProjectModel)).all()
+    return results
+
+@app.post("/projects/", response_model=ProjectModelSchema)
+async def create_project(project: ProjectModelSchema, session=Depends(db_dependency)):
+    new_project = project.model_dump()
+    db_project = ProjectModel(**new_project)
+    session.add(db_project)
+    session.commit()
+    session.refresh(db_project)
+    return db_project
+
+@app.get("/blogs/", response_model=list[BlogPostSchema])
+async def get_blogs(session = Depends(db_dependency)):
+    results = session.exec(select(BlogPost)).all()
+    return results
+
+@app.post("/blogs/", response_model=BlogPostSchema)
+async def create_blog(blog: BlogPostSchema, session=Depends(db_dependency)):
+    new_blog = blog.model_dump()
+    db_blog = BlogPost(**new_blog)
+    session.add(db_blog)
+    session.commit()
+    session.refresh(db_blog)
+    return db_blog    
+
+
+@app.get("/blogs/{slug}", response_model=BlogPostSchema)
+async def get_blog_by_slug(slug: str, session = Depends(db_dependency)):
+    blog_post = session.exec(select(BlogPost).where(BlogPost.slug == slug)).first()
+    if not blog_post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return blog_post

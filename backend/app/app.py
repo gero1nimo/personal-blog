@@ -65,6 +65,22 @@ async def create_project(project: ProjectModelSchema, session=Depends(db_depende
     session.refresh(db_project)
     return db_project
 
+@app.get("/projects/{project_id}", response_model=ProjectModelSchema)
+async def get_project_by_id(project_id: int, session = Depends(db_dependency)):
+    project = session.exec(select(ProjectModel).where(ProjectModel.id == project_id)).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+@app.delete("/projects/{project_id}", response_model=dict)
+async def delete_project_by_id(project_id: int, session=Depends(db_dependency)):
+    project = session.exec(select(ProjectModel).where(ProjectModel.id==project_id)).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Projects is not found.")
+    session.delete(project)
+    session.commit()
+    return {"message": f"Project with ID {project_id} has been successfully deleted."}
+
 @app.get("/blogs/", response_model=list[BlogPostSchema])
 async def get_blogs(session = Depends(db_dependency)):
     results = session.exec(select(BlogPost)).all()
@@ -86,3 +102,15 @@ async def get_blog_by_slug(slug: str, session = Depends(db_dependency)):
     if not blog_post:
         raise HTTPException(status_code=404, detail="Blog post not found")
     return blog_post
+
+@app.delete("/blogs/{slug}", response_model=dict)
+async def delete_blog_by_slug(slug: str, session= Depends(db_dependency)):
+    blog = session.exec(select(BlogPost).where(BlogPost.slug == slug)).first()
+    if not blog: 
+        raise HTTPException(status_code=404, detail="Blog is not found.")
+    
+    session.delete(blog)
+    session.commit()
+    return {"message": f"Blog with slug of {slug} has been succesfully deleted."}
+
+

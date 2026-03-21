@@ -113,4 +113,3 @@ async def delete_blog_by_slug(slug: str, session= Depends(db_dependency)):
     session.commit()
     return {"message": f"Blog with slug of {slug} has been succesfully deleted."}
 
-

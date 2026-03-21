@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const Portfolio = () => {
   const [projects, setProjects] = useState([]);
@@ -261,6 +262,14 @@ const Portfolio = () => {
                               {tech}
                             </span>
                           ))}
+                        </div>
+                        <div className="mt-6 flex gap-4">
+                          <Link
+                            to={`/projects/${project.slug}`}
+                            className="px-4 py-2 bg-white text-black text-sm font-medium rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            View Details
+                          </Link>
                         </div>
                       </div>
                     </div>

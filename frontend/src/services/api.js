@@ -9,6 +9,37 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) =>{ 
+    return Promise.reject(error)
+  }
+);
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.error("Oturum süresi doldu veya yetkisiz erişim.");
+      localStorage.removeItem('access_token');
+      if (window.location.pathname !== '/admin/login') {
+        window.location.href = '/admin/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+
+
 // Projects API
 export const projectsApi = {
   getAll: async () => {
@@ -53,4 +84,3 @@ export const profileApi = {
   },
 };
 
-export default api;

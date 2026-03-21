@@ -77,17 +77,7 @@ const Hero = () => {
 
       <div className="flex flex-col md:flex-row min-h-screen">
         {/* Left Side - Dark Grey */}
-        <div className="w-full md:w-1/2 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 relative flex flex-col justify-center px-8 md:px-16 lg:px-20 py-16 md:py-0 min-h-[60vh] md:min-h-screen">
-          {/* Minimalist Logo */}
-          <div className={`absolute top-8 left-8 ${isLoaded ? 'animate-fade-in' : 'opacity-0'}`}>
-            <div className="flex items-center space-x-3 group cursor-pointer">
-              <div className="w-10 h-10 border border-white/80 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:border-white">
-                <span className="text-white font-bold text-sm group-hover:text-black transition-colors">MA</span>
-              </div>
-              <span className="text-gray-500 text-xs tracking-widest hidden md:block">DEVELOPER</span>
-            </div>
-          </div>
-
+        <div className="w-full md:w-1/2 bg-gray-900 relative flex items-center justify-center p-8">
           {/* Main Content */}
           <div className="mt-20 md:mt-0">
             <p className={`text-gray-400 text-sm md:text-base mb-3 font-light tracking-[0.3em] uppercase ${isLoaded ? 'animate-slide-in-left' : 'opacity-0'}`}>
@@ -159,24 +149,6 @@ const Hero = () => {
         {/* Right Side - Black */}
         <div className="w-full md:w-1/2 bg-black relative flex flex-col min-h-[40vh] md:min-h-screen">
           {/* Navigation - Desktop */}
-          <nav className={`hidden md:flex absolute top-8 right-8 lg:right-12 items-center space-x-8 z-10 ${isLoaded ? 'animate-fade-in' : 'opacity-0'}`}>
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="text-gray-400 text-sm font-medium tracking-wider hover:text-white transition-all duration-300 relative group"
-              >
-                {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-            ))}
-            <a
-              href="#contact"
-              className="px-7 py-2.5 bg-white text-black text-sm font-medium rounded-full hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-white/20"
-            >
-              CONTACT ME
-            </a>
-          </nav>
 
           {/* Portrait Image Area */}
           <div className={`flex-grow flex items-center justify-center p-8 ${isLoaded ? 'animate-slide-in-right animation-delay-400' : 'opacity-0'}`}>

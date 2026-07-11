@@ -1,12 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .schemas.project import ProjectModelSchema
-from .schemas.blog import BlogPostSchema
-from .schemas.profile import ProfileModelSchema
-from app.models import ProjectModel, BlogPost
-from pydantic import BaseModel
-from sqlmodel import select
-from .api import blogs
+from app.api.v1 import projects
+from app.api.v1 import blogs
 
 app = FastAPI()
 
@@ -41,7 +36,7 @@ async def root():
 
 
 app.include_router(blogs.router)
-
+app.include_router(projects.router)
 # @app.get("/profile/")
 # async def get_profile():
 #     return profile_data
@@ -114,4 +109,3 @@ app.include_router(blogs.router)
 #     session.delete(blog)
 #     session.commit()
 #     return {"message": f"Blog with slug of {slug} has been succesfully deleted."}
-

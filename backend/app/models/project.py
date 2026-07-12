@@ -1,13 +1,11 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field
 from typing import Optional
 from sqlalchemy import Column, Integer, String, Text, Boolean, ARRAY
+from base import BaseModel
 
-class ProjectModel(SQLModel, table=True):
+class ProjectModel(BaseModel, table=True):
     __tablename__ = "projects"
     
-    
-    id: int = Field(primary_key=True, index=True)
-    name: str = Field(index=True, unique=True)
     slug: str = Field(index=True, unique=True)
     description: str
     tags: list[str] = Field(default=[], sa_column=Column(ARRAY(String)))

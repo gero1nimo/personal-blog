@@ -1,10 +1,8 @@
-from pydantic import BaseModel
+from base import BaseSchema, BaseDBMetadata
 from typing import Optional
 
 
-class ProjectModelSchema(BaseModel):
-    id: int
-    name: str
+class ProjectBase(BaseSchema):
     slug: str
     description: str
     tags: list[str] = []
@@ -14,3 +12,9 @@ class ProjectModelSchema(BaseModel):
     githubLink: Optional[str] = None
     liveDemo: Optional[str] = None
     featured: bool = False
+
+class ProjectCreate(ProjectBase):
+    pass
+
+class ProjectRead(ProjectBase, BaseDBMetadata):
+    pass

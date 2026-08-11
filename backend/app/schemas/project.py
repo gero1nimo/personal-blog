@@ -1,4 +1,4 @@
-from base import BaseSchema, BaseDBMetadata
+from .base import BaseSchema, BaseDBMetadata
 from typing import Optional
 
 

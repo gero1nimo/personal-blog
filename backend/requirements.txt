@@ -4,3 +4,5 @@ pydantic
 sqlalchemy
 databases
 imagekitio
+sqlmodel
+aiosqltite

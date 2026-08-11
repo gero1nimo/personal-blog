@@ -1,0 +1,200 @@
+{
+  "project": "personal-blog/backend",
+  "generated": "2026-08-03",
+  "summary": {
+    "total": 17,
+    "blocker": 6,
+    "high": 5,
+    "medium": 2,
+    "low": 4
+  },
+  "bugs": [
+    {
+      "id": "BUG-01",
+      "severity": "blocker",
+      "category": "import",
+      "file": "app/main.py",
+      "line": "3-4",
+      "title": "Wrong package root and missing 'blogs' module",
+      "reason": "`from api.v1 import projects` / `from api.v1 import blogs` use the wrong root (should be `app.api.v1`), and there is no `blogs` module in app/api/v1/ (only projects.py). Raises ModuleNotFoundError/ImportError on startup and masks every later error. Line 23 `app.include_router(blogs.router)` is dead for the same reason.",
+      "fix": "Use `from app.api.v1 import projects`; create the blogs module or remove the blogs import and include_router call.",
+      "verified": true
+    },
+    {
+      "id": "BUG-02",
+      "severity": "blocker",
+      "category": "import",
+      "file": "app/api/v1/projects.py",
+      "line": "5",
+      "title": "Bare import of repositories",
+      "reason": "`from repositories import BaseRepository` is a top-level import for a package that lives at app.repositories. There is no top-level `repositories` on sys.path. Raises ModuleNotFoundError.",
+      "fix": "Change to `from app.repositories import BaseRepository`.",
+      "verified": true
+    },
+    {
+      "id": "BUG-03",
+      "severity": "blocker",
+      "category": "import",
+      "file": "app/repositories/__init__.py",
+      "line": "1",
+      "title": "Bare import of base",
+      "reason": "`from base import BaseRepository` should be relative. Even after fixing BUG-02, importing app.repositories runs this and fails with ModuleNotFoundError: No module named 'base'.",
+      "fix": "Change to `from .base import BaseRepository`.",
+      "verified": true
+    },
+    {
+      "id": "BUG-04",
+      "severity": "blocker",
+      "category": "name-error",
+      "file": "app/repositories/base.py",
+      "line": "15",
+      "title": "List used but not imported",
+      "reason": "`async def get_all(...) -> List[ModelType]:` references List, but only Generic, TypeVar, Type are imported. With no `from __future__ import annotations`, the annotation is evaluated at definition time and raises NameError: name 'List' is not defined.",
+      "fix": "Add `List` to the typing import, or use built-in `list[ModelType]`.",
+      "verified": true
+    },
+    {
+      "id": "BUG-05",
+      "severity": "blocker",
+      "category": "import",
+      "file": "app/schemas/__init__.py",
+      "line": "1-4",
+      "title": "Imports non-existent names and modules",
+      "reason": "Imports `ProjectModelSchema` (project.py defines ProjectBase/ProjectCreate/ProjectRead, not that name) and modules .blog, .profile, .user that do not exist. The entire schemas package is unimportable; breaks as soon as anything imports app.schemas (the commented routes in main.py reference these names).",
+      "fix": "Import the names that actually exist (e.g. ProjectRead, ProjectCreate) and remove or create the blog/profile/user schema modules.",
+      "verified": true
+    },
+    {
+      "id": "BUG-06",
+      "severity": "blocker",
+      "category": "import",
+      "file": "app/schemas/project.py",
+      "line": "1",
+      "title": "Bare import of base schema",
+      "reason": "`from base import BaseSchema, BaseDBMetadata` should be relative. Raises ModuleNotFoundError: No module named 'base'.",
+      "fix": "Change to `from .base import BaseSchema, BaseDBMetadata`.",
+      "verified": true
+    },
+    {
+      "id": "BUG-07",
+      "severity": "high",
+      "category": "database",
+      "file": "app/models/project.py",
+      "line": "11-12",
+      "title": "PostgreSQL ARRAY column on SQLite",
+      "reason": "tags/techStack use Column(ARRAY(String)). ARRAY is PostgreSQL-only, but the project uses SQLite (dev.db, v1_db.db). SQLModel.metadata.create_all() fails to compile the column. Reproduced: CompileError - SQLiteTypeCompiler can't render element of type ARRAY.",
+      "fix": "Use a JSON column (sa_column=Column(JSON)) for SQLite, or move to PostgreSQL.",
+      "verified": true
+    },
+    {
+      "id": "BUG-08",
+      "severity": "medium",
+      "category": "database",
+      "file": "app/db.py",
+      "line": "6",
+      "title": "create_all runs at import time and depends on import order",
+      "reason": "SQLModel.metadata.create_all(db_engine) executes on import and only creates tables for models already registered in metadata. It works today only because projects.py imports app.models before app.db; any other import order silently creates no tables.",
+      "fix": "Ensure all models are imported before create_all, and move create_all into an explicit startup/init function rather than module import.",
+      "verified": false
+    },
+    {
+      "id": "BUG-09",
+      "severity": "high",
+      "category": "config",
+      "file": "app/config.py",
+      "line": "5",
+      "title": "BASE_DIR points above the backend folder",
+      "reason": "Path(__file__).resolve().parents[2] resolves to the parent above backend/, so env_file points at personal-blog/.env instead of backend/.env. No .env exists in backend/. Because SECRET_KEY and DATABASE_URL are required with no defaults, Settings() raises ValidationError at import unless set in the real environment.",
+      "fix": "Use parents[1] so env_file resolves to backend/.env, and add a .env with SECRET_KEY and DATABASE_URL.",
+      "verified": false
+    },
+    {
+      "id": "BUG-10",
+      "severity": "high",
+      "category": "async",
+      "file": "app/api/v1/projects.py",
+      "line": "11",
+      "title": "Missing await on async repository call",
+      "reason": "`result = BaseRepository(ProjectModel, session).get_all()` never awaits get_all, which is async def. result is an un-awaited coroutine, so the response fails to serialize.",
+      "fix": "Await the call: `result = await BaseRepository(ProjectModel, session).get_all()`.",
+      "verified": false
+    },
+    {
+      "id": "BUG-11",
+      "severity": "high",
+      "category": "async",
+      "file": "app/repositories/base.py, app/db.py",
+      "line": "base.py:11-18, db.py:8-15",
+      "title": "Async repository used with a synchronous session",
+      "reason": "BaseRepository is fully async (AsyncSession, await self.session.execute(...)), but db_dependency yields a synchronous sqlmodel.Session. Even after adding await, `await session.execute()` on a sync session errors.",
+      "fix": "Pick one model: async engine + AsyncSession + async sessionmaker, or convert the repository to synchronous calls.",
+      "verified": false
+    },
+    {
+      "id": "BUG-12",
+      "severity": "medium",
+      "category": "error-handling",
+      "file": "app/db.py",
+      "line": "12-14",
+      "title": "Dependency swallows exceptions and never rolls back",
+      "reason": "db_dependency wraps yield in `except Exception` and only prints. In a FastAPI yield-dependency this suppresses exceptions raised by the route (including HTTPException), so 404s/validation errors don't propagate correctly, and there is no rollback.",
+      "fix": "Remove the broad except, or rollback() and re-raise so FastAPI can handle the error.",
+      "verified": false
+    },
+    {
+      "id": "BUG-13",
+      "severity": "high",
+      "category": "dependencies",
+      "file": "requirements.txt",
+      "line": "1-7",
+      "title": "Missing pydantic-settings and other used packages",
+      "reason": "config.py imports `from pydantic_settings import BaseSettings`, but pydantic-settings is not listed; import fails without it. Also missing a Postgres driver if ARRAY/Postgres is kept, and PyJWT + cryptography used by security.py.",
+      "fix": "Add pydantic-settings (and psycopg2-binary/PyJWT/cryptography as needed) to requirements.txt.",
+      "verified": false
+    },
+    {
+      "id": "BUG-14",
+      "severity": "low",
+      "category": "design",
+      "file": "app/api/v1/projects.py",
+      "line": "2, 9",
+      "title": "ORM table model used as response_model; unused import",
+      "reason": "response_model=list[ProjectModel] uses the SQLModel table model as the response schema instead of ProjectRead, bypassing the schemas layer and exposing the DB model. Session imported from sqlalchemy.orm on line 2 is unused.",
+      "fix": "Use `response_model=list[ProjectRead]` and remove the unused Session import.",
+      "verified": false
+    },
+    {
+      "id": "BUG-15",
+      "severity": "low",
+      "category": "design",
+      "file": "app/schemas/project.py, app/schemas/base.py",
+      "line": "project.py:19, base.py:8-10",
+      "title": "Non-Pydantic mixin used in a Pydantic model",
+      "reason": "ProjectRead(ProjectBase, BaseDBMetadata) mixes in BaseDBMetadata, which is a plain class, not a Pydantic BaseModel; id/created_at may not behave as reliable validated fields.",
+      "fix": "Make BaseDBMetadata a BaseModel (with model_config from_attributes=True) or define id/created_at directly on ProjectRead.",
+      "verified": false
+    },
+    {
+      "id": "BUG-16",
+      "severity": "low",
+      "category": "cleanup",
+      "file": "app/core/security.py",
+      "line": "11",
+      "title": "Leftover debug print",
+      "reason": "`print(cryptography.__builtins__)` runs on import and is debug leftover.",
+      "fix": "Remove the print statement.",
+      "verified": false
+    },
+    {
+      "id": "BUG-17",
+      "severity": "low",
+      "category": "cleanup",
+      "file": "app/dependencies.py, app/exceptions.py, app/middleware.py, app/api/router.py, app/api/v1/router.py, app/core/base.py, app/core/logging.py",
+      "line": "-",
+      "title": "Empty/unwired stub files",
+      "reason": "Several files are empty or import-only scaffolding that is never wired up. Not bugs, but incomplete and misleading.",
+      "fix": "Implement and wire them, or remove until needed.",
+      "verified": false
+    }
+  ]
+}

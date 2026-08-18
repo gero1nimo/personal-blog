@@ -23,10 +23,11 @@ class BaseRepository(Generic[ModelType]):
         return result.scalars().first()
 
     async def create(self, obj_in: ModelType) -> ModelType:
-        self.session.add(obj_in)
+        data = self.model(**obj_in.model_dump())
+        self.session.add(data)
         await self.session.commit()
-        await self.session.refresh(obj_in)
-        return obj_in
+        await self.session.refresh(data)
+        return data
 
     async def get_by_slug(self, slug: str) -> ModelType:
         query = select(self.model).where(self.model.slug == slug)

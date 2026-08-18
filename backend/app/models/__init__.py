@@ -1,2 +1,2 @@
-from .project import ProjectModel
+from .project import Project
 from .base import BaseModel

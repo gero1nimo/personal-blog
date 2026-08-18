@@ -1,9 +1,9 @@
 from sqlmodel import Field
 from typing import Optional
-from sqlalchemy import Column, Integer, String, Text, Boolean, JSON
+from sqlalchemy import Column,JSON
 from .base import BaseModel
 
-class ProjectModel(BaseModel, table=True):
+class Project(BaseModel, table=True):
     __tablename__ = "projects"
 
     slug: str = Field(index=True, unique=True)

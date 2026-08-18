@@ -3,18 +3,23 @@ from typing import Optional
 
 
 class ProjectBase(BaseSchema):
+    
+    id: int
     slug: str
     description: str
-    tags: list[str] = []
+    tags: Optional[list[str]] = []
     techStack: list[str] = []
     status: str
     link: Optional[str] = None
     githubLink: Optional[str] = None
-    liveDemo: Optional[str] = None
     featured: bool = False
 
-class ProjectCreate(ProjectBase):
-    pass
+    class Config:
+        from_attributes = True
 
-class ProjectRead(ProjectBase, BaseDBMetadata):
-    pass
+class ProjectCreate(BaseSchema):
+    description: str
+    tags: list[str] = []
+    techStack: list[str] = []
+    status: str
+

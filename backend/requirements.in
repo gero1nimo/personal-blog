@@ -1,0 +1,9 @@
+fastapi[standard]
+pydantic
+sqlalchemy
+imagekitio
+sqlmodel
+aiosqlite
+pydantic-settings
+greenlet
+

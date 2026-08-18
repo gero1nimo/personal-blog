@@ -1,3 +1,11 @@
 .env
-/__pycache__/*
-/app/__pycache__/*
+myvenv/
+.venv/
+__pycache__/
+*.py[cod]
+*.db
+.idea/
+.vscode/
+.pytest_cache/
+.ruff_cache/
+docs/

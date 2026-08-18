@@ -1,19 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.models import ProjectModel
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models import Project
 from app.db import db_dependency
+from app.schemas import ProjectBase
 from app.repositories import BaseRepository
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
-@router.get("/", response_model=list[ProjectModel])
+@router.get("/", response_model=list[Project])
 async def get_all_projects(session=Depends(db_dependency)):
-    result = await BaseRepository(ProjectModel,session).get_all()
+    result = await BaseRepository(Project,session).get_all()
     return result
 
-@router.get("/{project_id}", response_model=ProjectModel)
+@router.get("/{project_id}", response_model=Project)
 async def get_project_by_id(project_id: int,session=Depends(db_dependency)):
-    repo = BaseRepository(ProjectModel, session)
+    repo = BaseRepository(Project, session)
     result = await repo.get_by_id(project_id)
     if not result:
         raise HTTPException(
@@ -25,11 +27,13 @@ async def get_project_by_id(project_id: int,session=Depends(db_dependency)):
 
 
 @router.post("/")
-async def create_project(project_data: ProjectModel, session= Depends(db_dependency)):
-    repo = BaseRepository(ProjectModel, session)
-    project = project_data.model_dump()
-    result = repo.create(project)
+async def create_project(project_data: ProjectBase, session: AsyncSession= Depends(db_dependency)):
+    repo = BaseRepository(Project, session)
+    result = await repo.create(project_data)
     if not result:
-        return f"Object {result} has not been created"
+        raise HTTPException(
+            status_code=400, 
+            detail="Object has not been created"
+        )
 
     return result

@@ -1,1 +1,1 @@
-from .project import ProjectCreate, ProjectRead, ProjectBase
+from .project import ProjectCreate, ProjectBase

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Project
@@ -37,3 +37,24 @@ async def create_project(project_data: ProjectBase, session: AsyncSession= Depen
         )
 
     return result
+
+@router.delete("/{project_id}")
+async def delete_project(project_id: int, session: AsyncSession=Depends(db_dependency)):
+    repo = BaseRepository(Project, session)
+    try:
+        result = await repo.delete(project_id)
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Project with id {project_id} is not found!"
+            )
+        return None
+    
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail=f"There occured an internal server error while deleting the object. Error: {e}"
+        )

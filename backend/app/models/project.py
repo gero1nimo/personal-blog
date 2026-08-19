@@ -5,7 +5,7 @@ from .base import BaseModel
 
 class Project(BaseModel, table=True):
     __tablename__ = "projects"
-
+    name: str = Field(index=True)
     slug: str = Field(index=True, unique=True)
     description: str
     tags: list[str] = Field(default=[], sa_column=Column(JSON))

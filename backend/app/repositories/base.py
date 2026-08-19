@@ -34,11 +34,13 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def delete(self, id:int) -> None:
+    async def delete(self, id:int) -> ModelType:
         obj = await self.get_by_id(id)
         if obj:
             await self.session.delete(obj)
             await self.session.commit()
+        
+        return obj
 
     async def update(self, id:int, obj_in: ModelType) -> ModelType:
         obj = await self.get_by_id(id)

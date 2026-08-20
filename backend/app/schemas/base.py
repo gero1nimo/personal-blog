@@ -3,8 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 class BaseSchema(BaseModel):
-    name: str
-
+    created_at: Optional[datetime]
+    
 class BaseDBMetadata:
-    id: int
     created_at: Optional[datetime]

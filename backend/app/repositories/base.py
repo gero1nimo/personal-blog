@@ -1,11 +1,13 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from typing import Generic, TypeVar, Type, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
-from app.models.base import BaseModel
 
-ModelType = TypeVar("ModelType", bound=BaseModel)
+from app.models.base import BaseModel as MyBase
+
+ModelType = TypeVar("ModelType", bound=MyBase)
 
 class BaseRepository(Generic[ModelType]):
     def __init__(self, model: Type[ModelType], session: AsyncSession):
@@ -45,14 +47,38 @@ class BaseRepository(Generic[ModelType]):
     async def update(self, id:int, obj_in: ModelType) -> ModelType:
         obj = await self.get_by_id(id)
         if (not obj):
-            raise HTTPException(status_code=404, detail=f"Item with id {id} not found!")
+            result = await self.create(obj_in)
+            return result
 
         update_data = obj_in.model_dump()
+        update_data["slug"] = obj["slug"]
 
         for key, value in update_data.items():
             setattr(obj, key, value)
 
-        await self.session.commit()
-        await self.session.refresh(obj)
+        self._commit(obj)
 
+    async def patch(self, id: int, obj_in: ModelType) -> ModelType:
+        obj = await self.get_by_id(id)
+        if (not obj):
+            raise HTTPException(status_code=404, detail=f"Item with id {id} not found!")
+
+        update_data = obj_in.model_dump(exclude_unset=True)
+
+        for key, value in update_data.items():
+            setattr(obj, key, value)
+
+        self._commit(obj)
+
+    async def _commit(self, obj) -> ModelType:
+        try:
+            await self.session.commit()
+        except IntegrityError:
+            await self.session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="An unique area overlapped (probably slug)"
+            )
+
+        await self.session.refresh(obj)
         return obj

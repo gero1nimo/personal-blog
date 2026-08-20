@@ -3,8 +3,7 @@ from typing import Optional
 
 
 class ProjectBase(BaseSchema):
-    
-    id: int
+    name: str
     slug: str
     description: str
     tags: Optional[list[str]] = []
@@ -17,9 +16,20 @@ class ProjectBase(BaseSchema):
     class Config:
         from_attributes = True
 
-class ProjectCreate(BaseSchema):
-    description: str
-    tags: list[str] = []
-    techStack: list[str] = []
-    status: str
+class ProjectCreate(ProjectBase):
+    pass
 
+class ProjectUpdate(BaseSchema):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    tags: Optional[list[str]] = None
+    techStack: list[str] = None
+    status: str = None
+    link: Optional[str] = None 
+    githubLink: Optional[str] = None
+    featured: bool = None
+
+class ProjectRead(ProjectBase, BaseSchema):
+    id: int
+    

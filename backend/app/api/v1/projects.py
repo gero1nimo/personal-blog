@@ -6,7 +6,7 @@ from app.db import db_dependency
 from app.schemas import  ProjectUpdate, ProjectCreate, ProjectRead
 from app.repositories import BaseRepository, ProjectRepository
 
-router = APIRouter(prefix="/api/projects", tags=["projects"])
+router = APIRouter(prefix="/projects", tags=["projects"])
 
 @router.get("/", response_model=list[ProjectRead])
 async def get_all_projects(offset:int = 0, limit: int= 1000 , session=Depends(db_dependency)):
@@ -14,7 +14,7 @@ async def get_all_projects(offset:int = 0, limit: int= 1000 , session=Depends(db
     return result
 
 @router.get("/{project_id}", response_model=ProjectRead)
-async def get_project_by_id(project_id: int, session=Depends(db_dependency)):
+async def get_project_by_id(project_id: int, session: AsyncSession = Depends(db_dependency)):
     repo = ProjectRepository(session=session)
     result = await repo.get_by_id(project_id)
     if not result:

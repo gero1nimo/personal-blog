@@ -13,8 +13,7 @@ class ProjectBase(BaseSchema):
     githubLink: Optional[str] = None
     featured: bool = False
 
-    class Config:
-        from_attributes = True
+
 
 class ProjectCreate(ProjectBase):
     pass
@@ -24,12 +23,14 @@ class ProjectUpdate(BaseSchema):
     slug: Optional[str] = None
     description: Optional[str] = None
     tags: Optional[list[str]] = None
-    techStack: list[str] = None
-    status: str = None
+    techStack: Optional[list[str]] = None
+    status: Optional[str] = None
     link: Optional[str] = None 
     githubLink: Optional[str] = None
     featured: bool = None
 
-class ProjectRead(ProjectBase, BaseSchema):
+class ProjectRead(ProjectBase):
     id: int
-    
+
+    class Config:
+        from_attributes = True

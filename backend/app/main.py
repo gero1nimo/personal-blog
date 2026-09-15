@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import projects
+from .api import api_router
 from app.db import init_db, db_engine
 from app.config import settings
 
@@ -28,4 +28,4 @@ async def root():
     return {"message": "Hello, World!"}
 
 
-app.include_router(projects.router)
+app.include_router(api_router)

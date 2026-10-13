@@ -14,12 +14,12 @@ class BaseRepository(Generic[ModelType]):
         self.model = model
         self.session = session
 
-    async def get_all(self, offset: int = 0, limit: int= 1000) -> List[ModelType]:
+    async def get_all(self, offset: int = 0, limit: int= 1000) -> List[ModelType] | None:
         query = select(self.model).offset(offset).limit(limit)
         result = await self.session.execute(query)
         return result.scalars().all()
 
-    async def get_by_id(self, id: int) -> ModelType:
+    async def get_by_id(self, id: int) -> ModelType | None:
         query = select(self.model).where(self.model.id == id)
         result = await self.session.execute(query)
         return result.scalars().first()
@@ -31,7 +31,7 @@ class BaseRepository(Generic[ModelType]):
         await self.session.refresh(data)
         return data
 
-    async def get_by_slug(self, slug: str) -> ModelType:
+    async def get_by_slug(self, slug: str) -> ModelType | None:
         query = select(self.model).where(self.model.slug == slug)
         result = await self.session.execute(query)
         return result.scalars().first()
@@ -44,9 +44,9 @@ class BaseRepository(Generic[ModelType]):
         
         return obj
 
-    async def update(self, id:int, obj_in: ModelType) -> ModelType:
+    async def put(self, id:int, obj_in: ModelType) -> ModelType:
         obj = await self.get_by_id(id)
-        if (not obj):
+        if not obj:
             result = await self.create(obj_in)
             return result
 
@@ -56,19 +56,50 @@ class BaseRepository(Generic[ModelType]):
         for key, value in update_data.items():
             setattr(obj, key, value)
 
-        self._commit(obj)
+        await self._commit(obj)
 
-    async def patch(self, id: int, obj_in: ModelType) -> ModelType:
-        obj = await self.get_by_id(id)
-        if (not obj):
-            raise HTTPException(status_code=404, detail=f"Item with id {id} not found!")
+        return obj
 
-        update_data = obj_in.model_dump(exclude_unset=True)
+    async def put_by_slug(self, slug:str, obj_in: ModelType) -> ModelType:
+        obj = await self.get_by_slug(id)
+        if not obj:
+            result = await self.create(obj_in)
+            return result
+
+        update_data = obj_in.model_dump()
+        update_data["slug"] = obj["slug"]
 
         for key, value in update_data.items():
             setattr(obj, key, value)
 
-        self._commit(obj)
+        await self._commit(obj)
+
+        return obj
+
+    async def patch(self, id: int, obj_in: ModelType) -> ModelType:
+        obj = await self.get_by_id(id)
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Item with id {id} not found!")
+
+        update_data = obj_in.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(obj, key, value)
+
+        await self._commit(obj)
+
+        return obj
+
+    async def patch_by_slug(self, slug: str, obj_in: ModelType) -> ModelType:
+        obj = await self.get_by_slug(slug)
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Item with slug {slug} not found!")
+
+        update_data = obj_in.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(obj, key, value)
+
+        await self._commit(obj)
+        return obj
 
     async def _commit(self, obj) -> ModelType:
         try:

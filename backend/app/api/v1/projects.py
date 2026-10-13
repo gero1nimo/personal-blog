@@ -1,16 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import Project
 from app.db import db_dependency
 from app.schemas import  ProjectUpdate, ProjectCreate, ProjectRead
-from app.repositories import BaseRepository, ProjectRepository
+from app.repositories import ProjectRepository
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 @router.get("/", response_model=list[ProjectRead])
 async def get_all_projects(offset:int = 0, limit: int= 1000 , session=Depends(db_dependency)):
-    result = await BaseRepository(Project,session).get_all(offset, limit)
+    result = await ProjectRepository(session).get_all(offset, limit)
     return result
 
 @router.get("/{project_id}", response_model=ProjectRead)
@@ -22,13 +20,22 @@ async def get_project_by_id(project_id: int, session: AsyncSession = Depends(db_
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project with id: {project_id} is not found"
         )
-
     return result
 
+@router.get("/slug/{project_slug}", response_model=ProjectRead)
+async def get_project_by_slug(project_slug: str, session: AsyncSession = Depends(db_dependency)):
+    repo = ProjectRepository(session=session)
+    result = await repo.get_by_slug(project_slug)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with slug: {project_slug} is not found"
+        )
+    return result
 
 @router.post("/")
 async def create_project(project_data: ProjectCreate, session: AsyncSession= Depends(db_dependency)):
-    repo = BaseRepository(Project, session)
+    repo = ProjectRepository(session)
     result = await repo.create(project_data)
     if not result:
         raise HTTPException(
@@ -40,8 +47,7 @@ async def create_project(project_data: ProjectCreate, session: AsyncSession= Dep
 
 @router.delete("/{project_id}")
 async def delete_project(project_id: int, session: AsyncSession=Depends(db_dependency)):
-    repo = BaseRepository(Project, session)
-
+    repo = ProjectRepository(session)
     result = await repo.delete(project_id)
     if not result:
         raise HTTPException(
@@ -49,23 +55,23 @@ async def delete_project(project_id: int, session: AsyncSession=Depends(db_depen
             detail=f"Project with id {project_id} is not found!"
         )
     return None
-    
-@router.put("/{project_slug}")
-async def update_project(project_id: int, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
-    repo = BaseRepository(Project, session)
 
-    result = await repo.update(project_id, project_data)
-    if not result:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with id {project_id} is not found."
-        )
+@router.put("/{project_id}", response_model=ProjectRead)
+async def put_project_by_id(project_id: int, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+    repo = ProjectRepository(session)
+    result = await repo.put(project_id, project_data)
+    return result
+
+@router.put("/slug/{project_slug}")
+async def put_project_by_slug(project_slug: str, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+    repo = ProjectRepository(session)
+    result = await repo.put_by_slug(project_slug, project_data)
     return result
         
 
 @router.patch("/{project_id}")
-async def patch_project(project_id: int, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
-    repo = BaseRepository(Project, session)
+async def patch_by_id(project_id: int, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+    repo = ProjectRepository(session)
     result = await repo.patch(project_id, project_data)
     if not result: 
         raise HTTPException(
@@ -73,4 +79,16 @@ async def patch_project(project_id: int, project_data: ProjectUpdate, session: A
             detail=f"Project with id {project_id} is not found."
         )
     
+    return result
+
+@router.patch("/slug/{project_slug}")
+async def patch_by_slug(project_slug: str, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+    repo = ProjectRepository(session)
+    result = await repo.patch_by_slug(project_slug, project_data)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with id {project_slug} is not found."
+        )
+
     return result

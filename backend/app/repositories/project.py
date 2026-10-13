@@ -15,8 +15,3 @@ class ProjectRepository(BaseRepository[Project]):
         query = select(Project).where(Project.slug == slug)
         result = await self.session.execute(query)
         return result.scalars().first()
-
-    async def get_by_id(self, id):
-        query = select(Project).where(Project.id == id)
-        result = await self.session.execute(query)
-        return result

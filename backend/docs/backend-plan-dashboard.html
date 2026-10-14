@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backend Proje Planı — Personal Portfolio</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --panel:#ffffff; --ink:#16192b; --muted:#6b7185; --line:#e4e7f0;
+    --navy:#1f3864; --accent:#2e5c9a; --accent-soft:#eaf0fa;
+    --ok:#1f7a4d; --ok-soft:#e3f4ea;
+    --blocker:#b3261e; --blocker-soft:#fdeceb;
+    --high:#a1620a; --high-soft:#fdf1e0;
+    --mid:#7a6a12; --mid-soft:#fbf6e0;
+    --low:#5a6070; --low-soft:#eef0f4;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(22,25,43,.05), 0 8px 24px rgba(22,25,43,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:#eef1f7;color:#a31515;padding:1px 5px;border-radius:5px}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 22px 80px}
+
+  header.hero{background:linear-gradient(135deg,#1f3864 0%,#2e5c9a 100%);color:#fff;border-radius:var(--radius);padding:30px 32px;box-shadow:var(--shadow)}
+  .eyebrow{font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.75;font-weight:600}
+  h1{margin:8px 0 6px;font-size:31px;letter-spacing:-.02em;font-weight:700}
+  .sub{opacity:.88;font-size:14.5px;margin:0}
+  .chips{margin-top:18px;display:flex;flex-wrap:wrap;gap:7px}
+  .chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:500}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px;margin:18px 0}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+  .kpi .lbl{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .kpi .val{font-size:27px;font-weight:700;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+  .kpi .val small{font-size:14px;font-weight:600;color:var(--muted)}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+  .panel > h2{margin:0;padding:17px 22px;font-size:15.5px;font-weight:700;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .panel > h2 .n{width:23px;height:23px;border-radius:7px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:12px;font-weight:700}
+  .pad{padding:20px 22px}
+
+  .bar{display:block;height:9px;border-radius:99px;background:#e9ecf3;overflow:hidden}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#4d86d6);border-radius:99px;transition:width .28s ease}
+  .bar.done > i{background:linear-gradient(90deg,#1f7a4d,#37a86c)}
+
+  .phase{border-bottom:1px solid var(--line)}
+  .phase:last-child{border-bottom:0}
+  .phead{display:flex;align-items:center;gap:14px;padding:14px 22px;cursor:pointer;user-select:none;transition:background .12s}
+  .phead:hover{background:#fafbfe}
+  .phead .caret{color:var(--muted);font-size:11px;transition:transform .18s;width:10px}
+  .phase.open .phead .caret{transform:rotate(90deg)}
+  .phead .nm{font-weight:650;font-size:14.5px;flex:1;min-width:0}
+  .phead .days{font-size:12px;color:var(--muted);white-space:nowrap}
+  .phead .pb{display:block;width:132px;flex:none}
+  .phead .cnt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;width:44px;text-align:right}
+  .ptasks{display:none;padding:2px 22px 16px 46px}
+  .phase.open .ptasks{display:block}
+
+  .t{display:flex;gap:12px;padding:9px 0;border-top:1px dashed var(--line);align-items:flex-start}
+  .t:first-child{border-top:0}
+  .cbx{flex:none;width:19px;height:19px;margin-top:1px;border:1.8px solid #c3cadb;border-radius:6px;background:#fff;cursor:pointer;position:relative;padding:0;transition:all .15s}
+  .cbx:hover{border-color:var(--accent)}
+  .cbx.on{background:var(--ok);border-color:var(--ok)}
+  .cbx.on::after{content:"";position:absolute;left:5.6px;top:2px;width:4.5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(43deg)}
+  .t .body{flex:1;min-width:0}
+  .t.done .body .txt{text-decoration:line-through;color:var(--muted)}
+  .t .no{font-weight:700;color:var(--accent);font-size:12.5px;margin-right:7px;font-variant-numeric:tabular-nums}
+  .t .txt{font-size:13.8px}
+  .t .meta{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--low-soft);color:var(--low);font-weight:600}
+  .tag.d{background:var(--accent-soft);color:var(--accent)}
+  .tag.b{background:var(--blocker-soft);color:var(--blocker)}
+
+  .tl{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
+  .day{border:1px solid var(--line);border-radius:10px;padding:9px 5px;text-align:center;background:#fbfcfe;position:relative}
+  .day .d{font-size:10.5px;color:var(--muted);font-weight:600}
+  .day .n{font-size:17px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+  .day .f{margin-top:6px;font-size:9.5px;font-weight:700;padding:2px 3px;border-radius:5px;color:#fff;letter-spacing:.02em}
+  .day.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .day.today .n{color:var(--accent)}
+  .tl-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;font-size:12px;color:var(--muted)}
+  .tl-legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:11px;height:11px;border-radius:4px;display:inline-block}
+
+  .filters{display:flex;flex-wrap:wrap;gap:7px;padding:0 22px 14px}
+  .fbtn{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 13px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .13s;font-family:inherit}
+  .fbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .fbtn.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
+  table.bugs{width:100%;border-collapse:collapse;font-size:13.3px}
+  table.bugs th{text-align:left;background:#f4f6fa;color:var(--muted);font-size:11px;letter-spacing:.09em;text-transform:uppercase;padding:9px 12px;border-bottom:1px solid var(--line);position:sticky;top:0}
+  table.bugs td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.bugs tr:last-child td{border-bottom:0}
+  .sev{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;display:inline-block}
+  .sev.Blocker{background:var(--blocker-soft);color:var(--blocker)}
+  .sev.Yüksek{background:var(--high-soft);color:var(--high)}
+  .sev.Orta{background:var(--mid-soft);color:var(--mid)}
+  .sev.Düşük{background:var(--low-soft);color:var(--low)}
+  .kod{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.f{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted);word-break:break-word}
+
+  ul.crits{list-style:none;margin:0;padding:0}
+  li.crit{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px dashed var(--line);font-size:13.8px}
+  li.crit:first-child{border-top:0}
+  li.crit.done span{text-decoration:line-through;color:var(--muted)}
+
+  .note{background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 15px;font-size:13.3px;margin-top:16px}
+  .note.warn{background:var(--blocker-soft);border-left-color:var(--blocker)}
+  .note b{color:var(--navy)}
+  .note.warn b{color:var(--blocker)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .steps{counter-reset:s;list-style:none;margin:0;padding:0}
+  .steps li{counter-increment:s;position:relative;padding:9px 0 9px 34px;font-size:13.8px;border-top:1px dashed var(--line)}
+  .steps li:first-child{border-top:0}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:9px;width:22px;height:22px;border-radius:7px;background:var(--navy);color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px}
+  @media (max-width:900px){.grid2{grid-template-columns:1fr}.tl{grid-template-columns:repeat(7,1fr)}.phead .pb{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Personal Portfolio · Backend</div>
+  <h1>FastAPI Backend — Proje Planı</h1>
+  <p class="sub">Mevcut yapı denetimi ve 14 günlük uygulama planı · 18 – 31 Ağustos 2026</p>
+  <div class="chips">
+    <span class="chip">FastAPI</span><span class="chip">SQLModel</span><span class="chip">Alembic</span>
+    <span class="chip">PostgreSQL</span><span class="chip">Docker</span><span class="chip">DigitalOcean Droplet</span>
+    <span class="chip">ImageKit</span><span class="chip">JWT</span>
+  </div>
+</header>
+
+<div class="kpis">
+  <div class="kpi"><div class="lbl">Toplam görev</div><div class="val" id="k-total">0</div></div>
+  <div class="kpi"><div class="lbl">Tamamlanan</div><div class="val"><span id="k-done">0</span><small id="k-pct"> · %0</small></div></div>
+  <div class="kpi"><div class="lbl">Toplam efor</div><div class="val" id="k-eff">0<small> sa</small></div></div>
+  <div class="kpi"><div class="lbl">Kalan efor</div><div class="val" id="k-rem">0<small> sa</small></div></div>
+  <div class="kpi"><div class="lbl">Açık bulgu</div><div class="val" id="k-bugs">0<small> / 22</small></div></div>
+</div>
+
+<div class="panel"><div class="pad" style="padding-top:16px;padding-bottom:16px">
+  <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:8px">
+    <b style="color:var(--ink)">Genel ilerleme</b><span id="k-prog">0 / 0 görev</span>
+  </div>
+  <div class="bar" id="overall"><i style="width:0%"></i></div>
+</div></div>
+
+<div class="panel">
+  <h2><span class="n">1</span> Faz ve Görev Dökümü</h2>
+  <div id="phases"></div>
+</div>
+
+<div class="panel">
+  <h2><span class="n">2</span> Zaman Çizelgesi — 14 Gün</h2>
+  <div class="pad">
+    <div class="tl" id="tl"></div>
+    <div class="tl-legend" id="tl-leg"></div>
+    <div class="note"><b>Tampon yok — bilinçli.</b> Yoğun tempoda tampon, kapsamdan çıkarılabilir kalemlerle sağlanır. Sıkışırsan sırayla ertele: <b>6.6 e-posta bildirimi</b> → <b>8.1 GitHub Actions</b> → <b>7.8 yedekleme cron'u</b> (manuel <code>pg_dump</code> mutlaka al).</div>
+    <div class="note" style="margin-top:10px"><b>30 Ağustos Zafer Bayramı.</b> O günü boş bırakmak istersen Faz 7'yi 11–12. günlere sıkıştır veya teslimi 1 Eylül'e kaydır.</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2><span class="n">3</span> Denetim Bulguları <span style="font-weight:500;color:var(--muted);font-size:12.5px">— kod okunarak ve uygulama çalıştırılarak doğrulandı</span></h2>
+  <div class="filters" id="filters">
+    <button class="fbtn on" data-sev="all">Tümü</button>
+    <button class="fbtn" data-sev="Blocker">Blocker</button>
+    <button class="fbtn" data-sev="Yüksek">Yüksek</button>
+    <button class="fbtn" data-sev="Orta">Orta</button>
+    <button class="fbtn" data-sev="Düşük">Düşük</button>
+  </div>
+  <div style="overflow-x:auto"><table class="bugs">
+    <thead><tr><th style="width:60px"></th><th style="width:56px">Kod</th><th style="width:86px">Öncelik</th><th>Bulgu</th><th style="width:210px">Dosya</th><th style="width:96px">Görev</th></tr></thead>
+    <tbody id="bugbody"></tbody>
+  </table></div>
+</div>
+
+<div class="grid2">
+  <div class="panel">
+    <h2><span class="n">4</span> Başarı Kriterleri</h2>
+    <div class="pad"><ul class="crits"><li class="crit"><button class="cbx" data-crit="0" aria-label="işaretle"></button><span>Temiz bir klonda <code>docker compose up</code> ile API + Postgres sorunsuz ayağa kalkıyor</span></li>
+<li class="crit"><button class="cbx" data-crit="1" aria-label="işaretle"></button><span><code>pytest</code> yeşil; en az 20 test; projects, posts ve auth kapsanıyor</span></li>
+<li class="crit"><button class="cbx" data-crit="2" aria-label="işaretle"></button><span><code>/api/v1/projects</code> ve <code>/api/v1/posts</code> için tam CRUD; okuma public, yazma admin-only</span></li>
+<li class="crit"><button class="cbx" data-crit="3" aria-label="işaretle"></button><span>Token'sız yazma denemesi <strong>401</strong> dönüyor (testle doğrulanmış)</span></li>
+<li class="crit"><button class="cbx" data-crit="4" aria-label="işaretle"></button><span>Şema sıfırdan <code>alembic upgrade head</code> ile kuruluyor; kodda <code>create_all</code> kalmadı</span></li>
+<li class="crit"><button class="cbx" data-crit="5" aria-label="işaretle"></button><span>API droplet'te HTTPS ile canlı; frontend gerçek API'den veri çekiyor</span></li>
+<li class="crit"><button class="cbx" data-crit="6" aria-label="işaretle"></button><span>Depoda <code>.env</code>, <code>*.db</code> ve <code>myvenv/</code> takip edilmiyor</span></li>
+<li class="crit"><button class="cbx" data-crit="7" aria-label="işaretle"></button><span><code>GET /health</code> 200 dönüyor (DB bağlantısı dahil kontrol ediliyor)</span></li></ul></div>
+  </div>
+  <div class="panel">
+    <h2><span class="n">5</span> Bugün Yapılacak İlk 3 Şey</h2>
+    <div class="pad">
+      <ol class="steps">
+        <li><code>.gitignore</code>'u genişlet ve <code>myvenv/</code>, <code>*.db</code> dosyalarını git takibinden çıkar.</li>
+        <li><code>requirements.txt</code>'teki <code>aiosqltite</code> yazım hatasını düzelt; <code>pydantic-settings</code> ve <code>greenlet</code> ekle.</li>
+        <li>Boş bir klasöre klonlayıp <code>pip install -r requirements.txt</code> + <code>uvicorn app.main:app</code> ile gerçekten kurulabildiğini doğrula.</li>
+      </ol>
+      <div class="note warn"><b>Bu üçü bitmeden Faz 1'e geçme.</b> Sonraki her faz bunların üzerine kuruluyor — özellikle Docker'a geçerken kurulamayan bir <code>requirements.txt</code> ilk duvara çarpacağın nokta.</div>
+    </div>
+  </div>
+</div>
+
+<footer>Bu panel oturum içinde çalışır — işaretlemeler tarayıcı sekmesi kapanınca sıfırlanır. Kalıcı takip için Excel çizelgesini kullan.</footer>
+</div>
+
+<script>
+const DATA = {"tasks": [{"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.1", "gorev": ".gitignore'u genişlet: myvenv/, .venv/, *.db, __pycache__/, .env, .idea/, .vscode/, .pytest_cache/", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.33, "bag": "—", "bulgu": "B-03"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.2", "gorev": "git rm -r --cached myvenv dev.db v1_db.db ile takipten çıkar ve commit'le", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.33, "bag": "0.1", "bulgu": "B-03"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.3", "gorev": "requirements.txt düzelt: aiosqltite→aiosqlite, pydantic-settings + greenlet ekle, databases çıkar, sürümleri pinle", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.75, "bag": "—", "bulgu": "B-02"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.4", "gorev": "Settings'i genişlet: ENV, CORS_ORIGINS, JWT_SECRET, JWT_ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.75, "bag": "0.3", "bulgu": "B-15"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.5", "gorev": ".env.example yaz (gerçek değer yok, sadece anahtar isimleri)", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.33, "bag": "0.4", "bulgu": "B-18"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.6", "gorev": "core/security.py'yi temizle: debug print ve ölü yorum bloğunu sil", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.17, "bag": "—", "bulgu": "B-01"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.7", "gorev": "README.md'yi UTF-8 olarak yeniden yaz; models/readme.md ve schemas/readme.md'yi güncelle", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.75, "bag": "—", "bulgu": "B-17, B-20"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.8", "gorev": "bug_report.json'ı docs/ altına arşivle veya sil", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.17, "bag": "—", "bulgu": "—"}, {"faz": "Faz 0 — Temizlik ve Zemin", "no": "0.K", "gorev": "KONTROL: temiz klonda pip install + uvicorn app.main:app çalışıyor", "gun": 1, "tarih": "18.08.2026 Sal", "efor": 0.25, "bag": "0.3", "bulgu": "—"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.1", "gorev": "api/v1/router.py + api/router.py doldur; main.py tek include_router yapsın; wildcard import'u kaldır", "gun": 2, "tarih": "19.08.2026 Çar", "efor": 0.75, "bag": "Faz 0", "bulgu": "B-13, B-19"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.2", "gorev": "Şemaları ayır: ProjectCreate (id yok), ProjectUpdate (hepsi Optional), ProjectRead (id+tarihler)", "gun": 2, "tarih": "19.08.2026 Çar", "efor": 1.5, "bag": "1.1", "bulgu": "B-04, B-12"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.3", "gorev": "response_model'leri ProjectRead yap; SQLModel table model'i API yüzeyinden çek", "gun": 2, "tarih": "19.08.2026 Çar", "efor": 0.5, "bag": "1.2", "bulgu": "B-05"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.4", "gorev": "Alan adlarını snake_case'e çevir + alias_generator=to_camel ile JSON'da camelCase koru", "gun": 2, "tarih": "19.08.2026 Çar", "efor": 1.5, "bag": "1.2", "bulgu": "B-16"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.5", "gorev": "BaseModel'den name'i çıkar; id + created_at + updated_at bırak; Project'e kendi name'ini ekle", "gun": 3, "tarih": "20.08.2026 Per", "efor": 0.75, "bag": "1.2", "bulgu": "B-10, B-11"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.6", "gorev": "get_by_slug'ı ProjectRepository'ye taşı; update'i exclude_unset=True ile partial update yap", "gun": 3, "tarih": "20.08.2026 Per", "efor": 1, "bag": "1.5", "bulgu": "B-07, B-09"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.7", "gorev": "PUT/PATCH/DELETE endpoint'leri + Page[T] sayfalama şeması (items, total, page, size)", "gun": 3, "tarih": "20.08.2026 Per", "efor": 1.5, "bag": "1.6", "bulgu": "B-07, B-21"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.8", "gorev": "db_dependency'ye try/except/rollback ekle", "gun": 3, "tarih": "20.08.2026 Per", "efor": 0.33, "bag": "—", "bulgu": "B-08"}, {"faz": "Faz 1 — Router, Şema, Repository", "no": "1.K", "gorev": "KONTROL: /docs'ta 5 project endpoint'i; POST id istemiyor; PATCH tek alan güncelliyor", "gun": 3, "tarih": "20.08.2026 Per", "efor": 0.25, "bag": "1.7", "bulgu": "—"}, {"faz": "Faz 2 — Test Altyapısı", "no": "2.1", "gorev": "pytest + pytest-asyncio + httpx; conftest.py: in-memory async engine, AsyncClient fixture, dependency override", "gun": 3, "tarih": "20.08.2026 Per", "efor": 2, "bag": "Faz 1", "bulgu": "B-14"}, {"faz": "Faz 2 — Test Altyapısı", "no": "2.2", "gorev": "test_projects.py: create/list/get/update/delete + 404 + 422 + sayfalama testleri", "gun": 3, "tarih": "20.08.2026 Per", "efor": 2, "bag": "2.1", "bulgu": "B-14"}, {"faz": "Faz 2 — Test Altyapısı", "no": "2.K", "gorev": "KONTROL: pytest yeşil, en az 10 test geçiyor", "gun": 3, "tarih": "20.08.2026 Per", "efor": 0.25, "bag": "2.2", "bulgu": "—"}, {"faz": "Faz 3 — Alembic + PostgreSQL", "no": "3.1", "gorev": "alembic init -t async alembic; env.py'yi SQLModel metadata + settings.DATABASE_URL ile bağla", "gun": 4, "tarih": "21.08.2026 Cum", "efor": 1.5, "bag": "Faz 1", "bulgu": "B-06"}, {"faz": "Faz 3 — Alembic + PostgreSQL", "no": "3.2", "gorev": "İlk migration'ı üret; init_db()/create_all çağrısını lifespan'den kaldır", "gun": 4, "tarih": "21.08.2026 Cum", "efor": 1, "bag": "3.1", "bulgu": "B-06"}, {"faz": "Faz 3 — Alembic + PostgreSQL", "no": "3.3", "gorev": "docker-compose.yml'e postgres:17-alpine ekle; asyncpg bağımlılığı; DATABASE_URL env'den", "gun": 4, "tarih": "21.08.2026 Cum", "efor": 1.5, "bag": "3.2", "bulgu": "—"}, {"faz": "Faz 3 — Alembic + PostgreSQL", "no": "3.4", "gorev": "Migration + testleri Postgres'e karşı çalıştır; JSON→JSONB davranışını doğrula", "gun": 4, "tarih": "21.08.2026 Cum", "efor": 1, "bag": "3.3", "bulgu": "—"}, {"faz": "Faz 3 — Alembic + PostgreSQL", "no": "3.K", "gorev": "KONTROL: boş Postgres'te alembic upgrade head şemayı kuruyor; pytest iki DB'de de yeşil", "gun": 4, "tarih": "21.08.2026 Cum", "efor": 0.25, "bag": "3.4", "bulgu": "—"}, {"faz": "Faz 4 — Blog (Post) Modülü", "no": "4.1", "gorev": "Post modeli: title, slug (unique+index), summary, content (Text), cover_image_url, tags, status, published_at, reading_time", "gun": 5, "tarih": "22.08.2026 Cmt", "efor": 2, "bag": "Faz 3", "bulgu": "—"}, {"faz": "Faz 4 — Blog (Post) Modülü", "no": "4.2", "gorev": "PostCreate/Update/Read şemaları; python-slugify ile Türkçe karakter → ASCII slug", "gun": 5, "tarih": "22.08.2026 Cmt", "efor": 1.5, "bag": "4.1", "bulgu": "—"}, {"faz": "Faz 4 — Blog (Post) Modülü", "no": "4.3", "gorev": "PostRepository: slug ile getir, sadece published listele, tag filtresi, published_at DESC sırala", "gun": 5, "tarih": "22.08.2026 Cmt", "efor": 1.5, "bag": "4.2", "bulgu": "—"}, {"faz": "Faz 4 — Blog (Post) Modülü", "no": "4.4", "gorev": "/api/v1/posts endpoint'leri: public list (published), public get-by-slug, admin CRUD", "gun": 6, "tarih": "23.08.2026 Paz", "efor": 2, "bag": "4.3", "bulgu": "—"}, {"faz": "Faz 4 — Blog (Post) Modülü", "no": "4.5", "gorev": "Alembic migration + test_posts.py (draft'ın public listede görünmediğini de test et)", "gun": 6, "tarih": "23.08.2026 Paz", "efor": 1, "bag": "4.4", "bulgu": "—"}, {"faz": "Faz 4 — Blog (Post) Modülü", "no": "4.K", "gorev": "KARAR: markdown backend'de HTML'e çevrilmeyecek — ham dönülüp frontend render edecek", "gun": 6, "tarih": "23.08.2026 Paz", "efor": 0.25, "bag": "4.1", "bulgu": "—"}, {"faz": "Faz 5 — Admin Auth (JWT)", "no": "5.1", "gorev": "User modeli: email (unique), hashed_password, is_active, is_admin + migration", "gun": 7, "tarih": "24.08.2026 Pzt", "efor": 1, "bag": "Faz 3", "bulgu": "B-01"}, {"faz": "Faz 5 — Admin Auth (JWT)", "no": "5.2", "gorev": "core/security.py: pwdlib[argon2] ile hash/verify + PyJWT ile access token üret/çöz", "gun": 7, "tarih": "24.08.2026 Pzt", "efor": 2, "bag": "5.1", "bulgu": "B-01"}, {"faz": "Faz 5 — Admin Auth (JWT)", "no": "5.3", "gorev": "POST /api/v1/auth/login (OAuth2PasswordRequestForm) → access token; GET /auth/me", "gun": 7, "tarih": "24.08.2026 Pzt", "efor": 1.5, "bag": "5.2", "bulgu": "B-01"}, {"faz": "Faz 5 — Admin Auth (JWT)", "no": "5.4", "gorev": "dependencies.py → get_current_admin: OAuth2PasswordBearer + token doğrulama + 401/403", "gun": 8, "tarih": "25.08.2026 Sal", "efor": 1.5, "bag": "5.3", "bulgu": "B-01"}, {"faz": "Faz 5 — Admin Auth (JWT)", "no": "5.5", "gorev": "Projects ve Posts'un tüm POST/PUT/PATCH/DELETE endpoint'lerini Depends(get_current_admin) ile koru", "gun": 8, "tarih": "25.08.2026 Sal", "efor": 1, "bag": "5.4", "bulgu": "B-01"}, {"faz": "Faz 5 — Admin Auth (JWT)", "no": "5.6", "gorev": "scripts/create_admin.py — env'den admin oluşturur. Public register endpoint'i AÇMA", "gun": 8, "tarih": "25.08.2026 Sal", "efor": 0.5, "bag": "5.2", "bulgu": "B-01"}, {"faz": "Faz 5 — Admin Auth (JWT)", "no": "5.7", "gorev": "test_auth.py: token'sız yazma→401, geçersiz/süresi dolmuş token→401, geçerli token→200", "gun": 8, "tarih": "25.08.2026 Sal", "efor": 1, "bag": "5.5", "bulgu": "B-14"}, {"faz": "Faz 6 — Medya + İletişim", "no": "6.1", "gorev": "imagekitio'yu SÜRÜM PİNLEYEREK ekle (v5.x yeni API!); IMAGEKIT_* ayarlarını Settings'e ekle", "gun": 9, "tarih": "26.08.2026 Çar", "efor": 0.5, "bag": "Faz 5", "bulgu": "—"}, {"faz": "Faz 6 — Medya + İletişim", "no": "6.2", "gorev": "services/media_service.py: MIME + boyut doğrulama (maks 5MB; jpeg/png/webp), ImageKit upload, url+file_id kaydet", "gun": 9, "tarih": "26.08.2026 Çar", "efor": 2.5, "bag": "6.1", "bulgu": "—"}, {"faz": "Faz 6 — Medya + İletişim", "no": "6.3", "gorev": "POST /api/v1/media/upload (admin-only) + DELETE /api/v1/media/{file_id}", "gun": 9, "tarih": "26.08.2026 Çar", "efor": 1.5, "bag": "6.2", "bulgu": "—"}, {"faz": "Faz 6 — Medya + İletişim", "no": "6.4", "gorev": "ContactMessage modeli (name, email, subject, message, ip, is_read) + migration", "gun": 10, "tarih": "27.08.2026 Per", "efor": 0.75, "bag": "Faz 3", "bulgu": "—"}, {"faz": "Faz 6 — Medya + İletişim", "no": "6.5", "gorev": "POST /api/v1/contact: EmailStr doğrulama, honeypot alanı, slowapi ile IP başına 3/saat rate limit", "gun": 10, "tarih": "27.08.2026 Per", "efor": 1.5, "bag": "6.4", "bulgu": "—"}, {"faz": "Faz 6 — Medya + İletişim", "no": "6.6", "gorev": "E-posta bildirimi (fastapi-mail/Resend) — BackgroundTasks ile. SIKIŞIRSAN İLK BU KESİLİR", "gun": 10, "tarih": "27.08.2026 Per", "efor": 1.5, "bag": "6.5", "bulgu": "—"}, {"faz": "Faz 6 — Medya + İletişim", "no": "6.7", "gorev": "GET /api/v1/contact — admin-only mesaj listesi", "gun": 10, "tarih": "27.08.2026 Per", "efor": 0.5, "bag": "6.5", "bulgu": "—"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.1", "gorev": "Multi-stage Dockerfile: builder + python:3.12-slim runtime, non-root user, katman önbelleği", "gun": 11, "tarih": "28.08.2026 Cum", "efor": 2, "bag": "Faz 6", "bulgu": "B-22"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.2", "gorev": "docker-compose.yml: api + db (postgres, named volume) + caddy reverse proxy", "gun": 11, "tarih": "28.08.2026 Cum", "efor": 2, "bag": "7.1", "bulgu": "—"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.3", "gorev": "Entrypoint script: konteyner başlarken alembic upgrade head çalıştır", "gun": 11, "tarih": "28.08.2026 Cum", "efor": 1, "bag": "7.2", "bulgu": "—"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.4", "gorev": "GET /health (DB ping dahil) + JSON structured logging + request-id middleware", "gun": 12, "tarih": "29.08.2026 Cmt", "efor": 1.5, "bag": "—", "bulgu": "B-13"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.5", "gorev": "Droplet hazırlığı: Docker + Compose, ufw (22/80/443), swap, non-root deploy user, SSH key auth", "gun": 12, "tarih": "29.08.2026 Cmt", "efor": 1.5, "bag": "—", "bulgu": "—"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.6", "gorev": "Domain yönlendirme + Caddy ile otomatik Let's Encrypt HTTPS", "gun": 12, "tarih": "29.08.2026 Cmt", "efor": 1, "bag": "7.5", "bulgu": "—"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.7", "gorev": "CORS_ORIGINS'i gerçek frontend domain'ine ayarla; production'da /docs + /redoc'u kapat veya koru", "gun": 13, "tarih": "30.08.2026 Paz", "efor": 0.5, "bag": "7.6", "bulgu": "B-15"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.8", "gorev": "Günlük pg_dump yedeği (cron, 7 gün saklama) + geri yüklemeyi bir kez dene", "gun": 13, "tarih": "30.08.2026 Paz", "efor": 1, "bag": "7.6", "bulgu": "—"}, {"faz": "Faz 7 — Docker + Droplet", "no": "7.K", "gorev": "KRİTİK: .env dosyasını droplet'e git ile DEĞİL, scp ile taşı", "gun": 13, "tarih": "30.08.2026 Paz", "efor": 0.25, "bag": "7.5", "bulgu": "—"}, {"faz": "Faz 8 — Kapanış", "no": "8.1", "gorev": "GitHub Actions: her push'ta pytest + ruff check", "gun": 14, "tarih": "31.08.2026 Pzt", "efor": 1.5, "bag": "Faz 2", "bulgu": "—"}, {"faz": "Faz 8 — Kapanış", "no": "8.2", "gorev": "Frontend'i canlı API'ye bağla; uçtan uca smoke test (projeler, blog, login, upload, iletişim)", "gun": 14, "tarih": "31.08.2026 Pzt", "efor": 1, "bag": "Faz 7", "bulgu": "—"}, {"faz": "Faz 8 — Kapanış", "no": "8.3", "gorev": "README + .env.example son hali; /docs endpoint açıklamalarını gözden geçir", "gun": 14, "tarih": "31.08.2026 Pzt", "efor": 1, "bag": "8.2", "bulgu": "—"}, {"faz": "Faz 8 — Kapanış", "no": "8.4", "gorev": "8 başarı kriterini tek tek doğrula ve işaretle", "gun": 14, "tarih": "31.08.2026 Pzt", "efor": 0.5, "bag": "8.3", "bulgu": "—"}], "bugs": [{"kod": "B-01", "onc": "Blocker", "dosya": "app/core/security.py, app/api/v1/projects.py", "bulgu": "Yazma endpoint'leri tamamen korumasız; security.py yorum satırı + debug print içeriyor; yorumdaki verify_password düz metin karşılaştırıyor", "gorev": "0.6, Faz 5"}, {"kod": "B-02", "onc": "Blocker", "dosya": "requirements.txt", "bulgu": "aiosqltite yazım hatası → pip install çalışmıyor; pydantic-settings ve greenlet eksik; databases gereksiz; sürüm pinlenmemiş", "gorev": "0.3"}, {"kod": "B-03", "onc": "Blocker", "dosya": ".gitignore", "bulgu": "myvenv/, dev.db, v1_db.db git takibinde; .gitignore sadece .env ve __pycache__ kapsıyor", "gorev": "0.1, 0.2"}, {"kod": "B-04", "onc": "Yüksek", "dosya": "app/api/v1/projects.py, app/schemas/project.py", "bulgu": "POST body ProjectBase → id zorunlu (422) ve client primary key belirleyebiliyor (id=99 ile 200 döndü). ProjectCreate hiç kullanılmıyor ve slug içermiyor", "gorev": "1.2"}, {"kod": "B-05", "onc": "Yüksek", "dosya": "app/api/v1/projects.py", "bulgu": "response_model olarak SQLModel table model kullanılıyor → ileride hashed_password gibi alanlar API'ye sızabilir", "gorev": "1.3"}, {"kod": "B-06", "onc": "Yüksek", "dosya": "app/db.py", "bulgu": "Migration yok; create_all var olan tabloya kolon eklemez → yeni alan sessizce uygulanmaz", "gorev": "3.1, 3.2"}, {"kod": "B-07", "onc": "Yüksek", "dosya": "app/api/v1/projects.py, app/repositories/base.py", "bulgu": "UPDATE/DELETE endpoint'i yok; update tüm alanları yazıyor → partial update imkânsız", "gorev": "1.6, 1.7"}, {"kod": "B-08", "onc": "Yüksek", "dosya": "app/db.py", "bulgu": "db_dependency'de rollback/hata yönetimi yok", "gorev": "1.8"}, {"kod": "B-09", "onc": "Orta", "dosya": "app/repositories/base.py", "bulgu": "get_by_slug base'e ait değil; self.model.slug slug'sız modellerde AttributeError", "gorev": "1.6"}, {"kod": "B-10", "onc": "Orta", "dosya": "app/models/base.py", "bulgu": "BaseModel her modele name alanını zorunlu kılıyor — domain kararı değil, kolaylık kararı", "gorev": "1.5"}, {"kod": "B-11", "onc": "Orta", "dosya": "app/models/base.py", "bulgu": "updated_at alanı yok — blogda 'son güncelleme' gerekecek", "gorev": "1.5"}, {"kod": "B-12", "onc": "Orta", "dosya": "app/schemas/project.py", "bulgu": "liveDemo modelde var ama ProjectBase şemasında yok → API'den doldurulamıyor", "gorev": "1.2"}, {"kod": "B-13", "onc": "Orta", "dosya": "dependencies/exceptions/middleware/router.py", "bulgu": "Boş (0 byte) stub dosyalar; router aggregation kullanılmıyor; logging.py tek satır", "gorev": "1.1, 7.4"}, {"kod": "B-14", "onc": "Orta", "dosya": "tests/", "bulgu": "Test yok, tests/ klasörü bile mevcut değil", "gorev": "2.1, 2.2, 5.7"}, {"kod": "B-15", "onc": "Orta", "dosya": "app/main.py", "bulgu": "CORS origin'leri hardcoded localhost — droplet'te frontend çalışmaz", "gorev": "0.4, 7.7"}, {"kod": "B-16", "onc": "Orta", "dosya": "app/models/project.py", "bulgu": "techStack/githubLink/liveDemo camelCase — PEP 8'e aykırı; alias_generator ile çözülmeli", "gorev": "1.4"}, {"kod": "B-17", "onc": "Düşük", "dosya": "README.md", "bulgu": "UTF-16 kodlanmış, ağaç karakterleri bozuk; hâlâ users/orders örneğini anlatıyor", "gorev": "0.7"}, {"kod": "B-18", "onc": "Düşük", "dosya": "—", "bulgu": ".env.example yok — projeyi başka makinede kurmak için hangi değişkenler gerektiği belirsiz", "gorev": "0.5"}, {"kod": "B-19", "onc": "Düşük", "dosya": "app/api/__init__.py", "bulgu": "from .v1 import * — wildcard import", "gorev": "1.1"}, {"kod": "B-20", "onc": "Düşük", "dosya": "app/models/readme.md, app/schemas/readme.md", "bulgu": "Var olmayan blog.py'yi anlatıyor", "gorev": "0.7"}, {"kod": "B-21", "onc": "Düşük", "dosya": "app/repositories/base.py", "bulgu": "get_all limiti 1000 sabit; sayfalama metadata'sı (total/page) yok", "gorev": "1.7"}, {"kod": "B-22", "onc": "Düşük", "dosya": "—", "bulgu": "Yerel Python 3.14 çok yeni; Docker imajında 3.12 gibi oturmuş sürüm tercih edilmeli", "gorev": "7.1"}]};
+const PHASE_COLORS = {
+  "Faz 0 — Temizlik ve Zemin":"#5a6070",
+  "Faz 1 — Router, Şema, Repository":"#2e5c9a",
+  "Faz 2 — Test Altyapısı":"#1f7a4d",
+  "Faz 3 — Alembic + PostgreSQL":"#7a4fa3",
+  "Faz 4 — Blog (Post) Modülü":"#a1620a",
+  "Faz 5 — Admin Auth (JWT)":"#b3261e",
+  "Faz 6 — Medya + İletişim":"#0f7d8c",
+  "Faz 7 — Docker + Droplet":"#1f3864",
+  "Faz 8 — Kapanış":"#7a6a12"
+};
+const state = { tasks:{}, crits:{}, bugs:{} };
+
+const phaseNames = [];
+DATA.tasks.forEach(t => { if(!phaseNames.includes(t.faz)) phaseNames.push(t.faz); });
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// ---- phases ----
+const wrapEl = document.getElementById('phases');
+phaseNames.forEach((p, pi) => {
+  const items = DATA.tasks.filter(t => t.faz === p);
+  const days = [...new Set(items.map(t => t.gun))];
+  const dayLabel = days.length > 1 ? ('Gün ' + days[0] + '–' + days[days.length-1]) : ('Gün ' + days[0]);
+  const eff = items.reduce((a,t)=>a+t.efor,0);
+  const div = document.createElement('div');
+  div.className = 'phase' + (pi === 0 ? ' open' : '');
+  div.innerHTML =
+    '<div class="phead"><span class="caret">▶</span>' +
+    '<span class="nm" style="border-left:3px solid '+PHASE_COLORS[p]+';padding-left:10px">'+esc(p)+'</span>' +
+    '<span class="days">'+dayLabel+' · '+eff.toFixed(2).replace(/\.?0+$/,'')+' sa</span>' +
+    '<span class="pb"><span class="bar"><i style="width:0%"></i></span></span>' +
+    '<span class="cnt">0/'+items.length+'</span></div>' +
+    '<div class="ptasks">' + items.map(t =>
+      '<div class="t" data-id="'+esc(t.no)+'">' +
+      '<button class="cbx" data-task="'+esc(t.no)+'" aria-label="işaretle"></button>' +
+      '<div class="body"><div><span class="no">'+esc(t.no)+'</span><span class="txt">'+esc(t.gorev)+'</span></div>' +
+      '<div class="meta"><span class="tag">'+esc(t.tarih)+'</span>' +
+      '<span class="tag">'+ (t.efor<1 ? Math.round(t.efor*60)+' dk' : (''+t.efor).replace(/\.?0+$/,'')+' sa') +'</span>' +
+      (t.bag && t.bag !== '—' ? '<span class="tag d">bağımlı: '+esc(t.bag)+'</span>' : '') +
+      (t.bulgu && t.bulgu !== '—' ? '<span class="tag b">'+esc(t.bulgu)+'</span>' : '') +
+      '</div></div></div>').join('') + '</div>';
+  div.querySelector('.phead').addEventListener('click', e => {
+    if (e.target.classList.contains('cbx')) return;
+    div.classList.toggle('open');
+  });
+  wrapEl.appendChild(div);
+});
+
+// ---- timeline ----
+const DAYS = [];
+DATA.tasks.forEach(t => { if(!DAYS.find(d=>d.n===t.gun)) DAYS.push({n:t.gun, tarih:t.tarih, faz:t.faz}); });
+DAYS.sort((a,b)=>a.n-b.n);
+const tl = document.getElementById('tl');
+DAYS.forEach(d => {
+  const fazlar = [...new Set(DATA.tasks.filter(t=>t.gun===d.n).map(t=>t.faz))];
+  const parts = d.tarih.split(' ');
+  const el = document.createElement('div');
+  el.className = 'day' + (d.n === 1 ? ' today' : '');
+  el.innerHTML = '<div class="d">'+esc(parts[1])+'</div><div class="n">'+parts[0].slice(0,2)+'</div>' +
+    fazlar.map(f => '<div class="f" style="background:'+PHASE_COLORS[f]+'" title="'+esc(f)+'">'+esc(f.split(' ')[1])+'</div>').join('');
+  tl.appendChild(el);
+});
+document.getElementById('tl-leg').innerHTML = phaseNames.map(p =>
+  '<span><i class="sw" style="background:'+PHASE_COLORS[p]+'"></i>'+esc(p)+'</span>').join('');
+
+// ---- bugs ----
+const tb = document.getElementById('bugbody');
+DATA.bugs.forEach(b => {
+  const tr = document.createElement('tr');
+  tr.dataset.sev = b.onc;
+  tr.innerHTML = '<td><button class="cbx" data-bug="'+esc(b.kod)+'" aria-label="işaretle"></button></td>' +
+    '<td class="kod">'+esc(b.kod)+'</td><td><span class="sev '+esc(b.onc)+'">'+esc(b.onc)+'</span></td>' +
+    '<td class="bt">'+esc(b.bulgu)+'</td><td class="f">'+esc(b.dosya)+'</td><td class="kod" style="color:var(--accent)">'+esc(b.gorev)+'</td>';
+  tb.appendChild(tr);
+});
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.fbtn'); if(!btn) return;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b === btn));
+  const s = btn.dataset.sev;
+  tb.querySelectorAll('tr').forEach(tr => { tr.style.display = (s === 'all' || tr.dataset.sev === s) ? '' : 'none'; });
+});
+
+// ---- checkbox wiring ----
+document.addEventListener('click', e => {
+  const c = e.target.closest('.cbx'); if(!c) return;
+  c.classList.toggle('on');
+  const on = c.classList.contains('on');
+  if (c.dataset.task) { state.tasks[c.dataset.task] = on; c.closest('.t').classList.toggle('done', on); }
+  if (c.dataset.crit) { state.crits[c.dataset.crit] = on; c.closest('.crit').classList.toggle('done', on); }
+  if (c.dataset.bug)  { state.bugs[c.dataset.bug] = on; c.closest('tr').style.opacity = on ? .45 : 1; }
+  render();
+});
+
+function render(){
+  const all = DATA.tasks;
+  const done = all.filter(t => state.tasks[t.no]);
+  const totalEff = all.reduce((a,t)=>a+t.efor,0);
+  const doneEff  = done.reduce((a,t)=>a+t.efor,0);
+  const pct = all.length ? Math.round(done.length / all.length * 100) : 0;
+
+  document.getElementById('k-total').textContent = all.length;
+  document.getElementById('k-done').textContent  = done.length;
+  document.getElementById('k-pct').textContent   = ' · %' + pct;
+  document.getElementById('k-eff').innerHTML     = totalEff.toFixed(1) + '<small> sa</small>';
+  document.getElementById('k-rem').innerHTML     = (totalEff - doneEff).toFixed(1) + '<small> sa</small>';
+  const openBugs = DATA.bugs.filter(b => !state.bugs[b.kod]).length;
+  document.getElementById('k-bugs').innerHTML    = openBugs + '<small> / ' + DATA.bugs.length + '</small>';
+  document.getElementById('k-prog').textContent  = done.length + ' / ' + all.length + ' görev';
+  const ov = document.getElementById('overall');
+  ov.querySelector('i').style.width = pct + '%';
+  ov.classList.toggle('done', pct === 100);
+
+  document.querySelectorAll('.phase').forEach((el, i) => {
+    const items = DATA.tasks.filter(t => t.faz === phaseNames[i]);
+    const d = items.filter(t => state.tasks[t.no]).length;
+    const p = items.length ? Math.round(d / items.length * 100) : 0;
+    const bar = el.querySelector('.pb .bar');
+    bar.querySelector('i').style.width = p + '%';
+    bar.classList.toggle('done', p === 100);
+    el.querySelector('.cnt').textContent = d + '/' + items.length;
+  });
+}
+render();
+</script>
+</body>
+</html>

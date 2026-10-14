@@ -27,8 +27,7 @@ class BaseRepository(Generic[ModelType]):
     async def create(self, obj_in: ModelType) -> ModelType:
         data = self.model(**obj_in.model_dump())
         self.session.add(data)
-        await self.session.commit()
-        await self.session.refresh(data)
+        await self._commit(data)
         return data
 
     async def get_by_slug(self, slug: str) -> ModelType | None:
@@ -51,7 +50,6 @@ class BaseRepository(Generic[ModelType]):
             return result
 
         update_data = obj_in.model_dump()
-        update_data["slug"] = obj["slug"]
 
         for key, value in update_data.items():
             setattr(obj, key, value)
@@ -61,13 +59,12 @@ class BaseRepository(Generic[ModelType]):
         return obj
 
     async def put_by_slug(self, slug:str, obj_in: ModelType) -> ModelType:
-        obj = await self.get_by_slug(id)
+        obj = await self.get_by_slug(slug)
         if not obj:
             result = await self.create(obj_in)
             return result
 
         update_data = obj_in.model_dump()
-        update_data["slug"] = obj["slug"]
 
         for key, value in update_data.items():
             setattr(obj, key, value)

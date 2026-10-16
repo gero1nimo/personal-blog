@@ -1,15 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import db_dependency
-from app.schemas import  ProjectUpdate, ProjectCreate, ProjectRead
+from app.schemas import  ProjectUpdate, ProjectCreate, ProjectRead, Page
 from app.repositories import ProjectRepository
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
-@router.get("/", response_model=list[ProjectRead])
-async def get_all_projects(offset:int = 0, limit: int= 1000 , session=Depends(db_dependency)):
-    result = await ProjectRepository(session).get_all(offset, limit)
-    return result
+@router.get("/", response_model=Page[ProjectRead])
+async def get_all_projects(page: int = Query(1, ge=1), size: int = Query(20, ge=1, le=100), session=Depends(db_dependency)):
+    items, total = await ProjectRepository(session).get_page(page, size)
+    return Page.create(items, total, page, size)
 
 @router.get("/{project_id}", response_model=ProjectRead)
 async def get_project_by_id(project_id: int, session: AsyncSession = Depends(db_dependency)):
@@ -57,13 +57,13 @@ async def delete_project(project_id: int, session: AsyncSession=Depends(db_depen
     return None
 
 @router.put("/{project_id}", response_model=ProjectRead)
-async def put_project_by_id(project_id: int, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+async def put_project_by_id(project_id: int, project_data: ProjectCreate, session: AsyncSession = Depends(db_dependency)):
     repo = ProjectRepository(session)
     result = await repo.put(project_id, project_data)
     return result
 
-@router.put("/slug/{project_slug}")
-async def put_project_by_slug(project_slug: str, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+@router.put("/slug/{project_slug}", response_model=ProjectRead)
+async def put_project_by_slug(project_slug: str, project_data: ProjectCreate, session: AsyncSession = Depends(db_dependency)):
     repo = ProjectRepository(session)
     result = await repo.put_by_slug(project_slug, project_data)
     return result

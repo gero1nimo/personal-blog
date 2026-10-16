@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from typing import Generic, TypeVar, Type, List
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -13,6 +13,12 @@ class BaseRepository(Generic[ModelType]):
     def __init__(self, model: Type[ModelType], session: AsyncSession):
         self.model = model
         self.session = session
+
+    async def get_page(self, page:int, size:int) -> tuple[List[ModelType], int]:
+        total = (await self.session.execute(select(func.count()).select_from(self.model))).scalar_one()
+        query = (select(self.model).order_by(self.model.id.desc()).offset((page - 1)* size).limit(size))
+        items = (await self.session.execute(query)).scalars().all()
+        return items, total
 
     async def get_all(self, offset: int = 0, limit: int= 1000) -> List[ModelType] | None:
         query = select(self.model).offset(offset).limit(limit)

@@ -98,6 +98,7 @@ pydantic-settings==2.15.0
     #   fastapi
 pygments==2.21.0
     # via rich
+
 python-dotenv==1.2.3
     # via
     #   pydantic-settings

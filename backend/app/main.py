@@ -2,12 +2,11 @@ from fastapi import Depends, FastAPI, HTTPException
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from .api import api_router
-from app.db import init_db, db_engine
+from app.db import db_engine
 from app.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
     yield
     await db_engine.dispose()
 

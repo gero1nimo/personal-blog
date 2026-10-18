@@ -6,4 +6,5 @@ sqlmodel
 aiosqlite
 pydantic-settings
 greenlet
-
+alembic
+asyncpg

@@ -1,11 +1,15 @@
 import os
 
-os.environ['DATABASE_URL'] = "sqlite+aiosqlite://"
+#os.environ['DATABASE_URL'] = "sqlite+aiosqlite://"
+#os.environ.setdefault("JWT_SECRET", "test-secret")
+
+TEST_DB_URL = os.environ.get("TEST_DATABASE_URL", "sqlite+aiosqlite://")
+os.environ["DATABASE_URL"] = TEST_DB_URL
 os.environ.setdefault("JWT_SECRET", "test-secret")
 
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine, AsyncEngine
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
@@ -40,3 +44,19 @@ async def client(engine) -> AsyncClient:
 
     app.dependency_overrides.clear()
 
+@pytest_asyncio.fixture
+async def engine() -> AsyncEngine:
+    if TEST_DB_URL.startswith("sqlite"):
+        engine = create_async_engine(
+            TEST_DB_URL,
+            poolclass=StaticPool,
+            connect_args={"check_same_thread": False},
+        )
+    else:
+        engine = create_async_engine(TEST_DB_URL)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
+    yield engine
+    await engine.dispose()

@@ -4,23 +4,23 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-
 from app.models.base import BaseModel as MyBase
 
 ModelType = TypeVar("ModelType", bound=MyBase)
+
 
 class BaseRepository(Generic[ModelType]):
     def __init__(self, model: Type[ModelType], session: AsyncSession):
         self.model = model
         self.session = session
 
-    async def get_page(self, page:int, size:int) -> tuple[List[ModelType], int]:
+    async def get_page(self, page: int, size: int) -> tuple[List[ModelType], int]:
         total = (await self.session.execute(select(func.count()).select_from(self.model))).scalar_one()
-        query = (select(self.model).order_by(self.model.id.desc()).offset((page - 1)* size).limit(size))
+        query = (select(self.model).order_by(self.model.id.desc()).offset((page - 1) * size).limit(size))
         items = (await self.session.execute(query)).scalars().all()
         return items, total
 
-    async def get_all(self, offset: int = 0, limit: int= 1000) -> List[ModelType] | None:
+    async def get_all(self, offset: int = 0, limit: int = 1000) -> List[ModelType] | None:
         query = select(self.model).offset(offset).limit(limit)
         result = await self.session.execute(query)
         return result.scalars().all()
@@ -41,15 +41,15 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(query)
         return result.scalars().first()
 
-    async def delete(self, id:int) -> ModelType:
+    async def delete(self, id: int) -> ModelType:
         obj = await self.get_by_id(id)
         if obj:
             await self.session.delete(obj)
             await self.session.commit()
-        
+
         return obj
 
-    async def put(self, id:int, obj_in: ModelType) -> ModelType:
+    async def put(self, id: int, obj_in: ModelType) -> ModelType:
         obj = await self.get_by_id(id)
         if not obj:
             result = await self.create(obj_in)
@@ -64,7 +64,7 @@ class BaseRepository(Generic[ModelType]):
 
         return obj
 
-    async def put_by_slug(self, slug:str, obj_in: ModelType) -> ModelType:
+    async def put_by_slug(self, slug: str, obj_in: ModelType) -> ModelType:
         obj = await self.get_by_slug(slug)
         if not obj:
             result = await self.create(obj_in)

@@ -100,7 +100,7 @@ Frontend'in (`personal-blog/frontend`) tükettiği, kendi kendine yetebilen bir 
 ### 2.2 Kapsam — Dahil
 
 - Project CRUD (public read, admin write)
-- Blog Post CRUD (draft/published durumu, slug, markdown içerik, tag)
+- Blog CRUD (yayın durumu `is_published`, slug, markdown içerik, tag)
 - JWT tabanlı tek-admin auth; tüm yazma işlemleri korumalı
 - ImageKit ile görsel yükleme
 - İletişim formu: mesajı kaydet + e-posta bildirimi + rate limit
@@ -128,8 +128,8 @@ Bunlar kötü fikir olduğu için değil, **14 güne sığmadığı** için dı�
 Proje şu 8 madde sağlandığında "bitti" sayılır:
 
 1. Temiz bir klonda `docker compose up` ile API + Postgres sorunsuz ayağa kalkıyor.
-2. `pytest` yeşil; en az 20 test; projects, posts ve auth kapsanıyor.
-3. `/api/v1/projects` ve `/api/v1/posts` için tam CRUD; okuma public, yazma admin-only.
+2. `pytest` yeşil; en az 20 test; projects, blog ve auth kapsanıyor.
+3. `/api/v1/projects` ve `/api/v1/blogs` için tam CRUD; okuma public, yazma admin-only.
 4. Token'sız yazma denemesi **401** dönüyor (testle doğrulanmış).
 5. Şema sıfırdan `alembic upgrade head` ile kuruluyor; kodda `create_all` çağrısı kalmadı.
 6. API droplet'te HTTPS ile canlı ve frontend gerçek API'den veri çekiyor.
@@ -153,14 +153,14 @@ backend/
 │   │   ├── router.py           # api_router → v1'i include eder
 │   │   └── v1/
 │   │       ├── router.py       # v1 aggregation
-│   │       ├── projects.py  posts.py  auth.py  media.py  contact.py
-│   ├── models/                 # base.py project.py post.py user.py contact_message.py
-│   ├── schemas/                # base.py common.py(Page[T]) project.py post.py auth.py contact.py
-│   ├── repositories/           # base.py project.py post.py user.py
+│   │       ├── projects.py  blogs.py  auth.py  media.py  contact.py
+│   ├── models/                 # base.py project.py blog.py user.py contact_message.py
+│   ├── schemas/                # base.py common.py(Page[T]) project.py blog.py auth.py contact.py
+│   ├── repositories/           # base.py project.py blog.py user.py
 │   ├── services/               # auth_service.py media_service.py email_service.py
 │   └── core/                   # security.py (pwdlib+PyJWT), logging.py
 ├── alembic/versions/
-├── tests/                      # conftest.py test_projects.py test_posts.py test_auth.py
+├── tests/                      # conftest.py test_projects.py test_blogs.py test_auth.py
 ├── scripts/create_admin.py
 ├── alembic.ini · Dockerfile · docker-compose.yml · .env.example · .gitignore
 └── requirements.txt + requirements-dev.txt   (veya pyproject.toml + uv)
@@ -195,7 +195,7 @@ Yeni özelliğe geçmeden önce projenin **kurulabilir** hale gelmesi gerekiyor.
 
 ### Faz 1 — Router, Şema ve Repository Hijyeni · Gün 2–3 (19–20 Ağu) · ~7,5 sa
 
-Yeni model eklemeden önce mevcut Project modülünü doğru hale getir. Buradaki kalıplar Post, User ve Contact için şablon olacak — yanlış kalıbı 4 kez tekrarlamaktansa bir kez düzelt.
+Yeni model eklemeden önce mevcut Project modülünü doğru hale getir. Buradaki kalıplar Blog, User ve Contact için şablon olacak — yanlış kalıbı 4 kez tekrarlamaktansa bir kez düzelt.
 
 | # | Görev | Efor | Bağımlılık | Kapattığı |
 |---|---|---|---|---|
@@ -241,15 +241,15 @@ Postgres'e geçişi **erken** yapıyoruz. Sebep: SQLite'ta çalışan `JSON` kol
 
 ---
 
-### Faz 4 — Blog (Post) Modülü · Gün 5–6 (22–23 Ağu, hafta sonu) · ~8 sa
+### Faz 4 — Blog Modülü · Gün 5–6 (22–23 Ağu, hafta sonu) · ~8 sa
 
 | # | Görev | Efor | Bağımlılık |
 |---|---|---|---|
-| 4.1 | `Post` modeli: `title`, `slug` (unique+index), `summary`, `content` (`sa_column=Column(Text)`), `cover_image_url`, `tags` (JSON), `status` (draft/published enum), `published_at`, `reading_time` | 2 sa | Faz 3 |
-| 4.2 | `PostCreate` / `PostUpdate` / `PostRead` şemaları; `python-slugify` ile Türkçe karakter → ASCII slug üretimi (ör. "Yazılım Mühendisliği" → `yazilim-muhendisligi`) | 1,5 sa | 4.1 |
-| 4.3 | `PostRepository`: slug ile getir, yalnızca published listele, tag'e göre filtrele, `published_at DESC` sırala | 1,5 sa | 4.2 |
-| 4.4 | `/api/v1/posts` endpoint'leri: public list (sadece published), public get-by-slug, admin CRUD | 2 sa | 4.3 |
-| 4.5 | Alembic migration + `test_posts.py` (draft'ın public listede görünmediğini de test et) | 1 sa | 4.4 |
+| 4.1 | `Blog` modeli (tablo: `blogs`): `title`, `slug` (unique+index), `summary`, `content` (`sa_column=Column(Text)`), `cover_img_url`, `tags` (JSON), `is_published` (bool, `status` enum yerine), `featured`, `reading_time` (sunucu hesaplar) | 2 sa | Faz 3 |
+| 4.2 | `BlogCreate` / `BlogUpdate` / `BlogRead` şemaları; `python-slugify` ile Türkçe karakter → ASCII slug üretimi (ör. "Yazılım Mühendisliği" → `yazilim-muhendisligi`) | 1,5 sa | 4.1 |
+| 4.3 | `BlogRepository`: slug ile getir, yalnızca yayınlanmış (`is_published`) olanları listele, tag'e göre filtrele, `created_at DESC` sırala; liste için içeriksiz `BlogListItem` şeması | 1,5 sa | 4.2 |
+| 4.4 | `/api/v1/blogs` endpoint'leri: public list (sadece published), public get-by-slug, admin CRUD | 2 sa | 4.3 |
+| 4.5 | Alembic migration + `test_blogs.py` (yayınlanmamış yazının public listede görünmediğini de test et) | 1 sa | 4.4 |
 
 **Karar noktası:** Markdown'ı backend'de mi HTML'e çevireceksin? **Öneri: hayır.** Ham markdown dön, frontend render etsin. Daha esnek olur ve XSS sorumluluğu tek yerde toplanır.
 
@@ -263,7 +263,7 @@ Postgres'e geçişi **erken** yapıyoruz. Sebep: SQLite'ta çalışan `JSON` kol
 | 5.2 | `core/security.py`: `pwdlib[argon2]` ile hash/verify, `PyJWT` ile access token üret/çöz | 2 sa | 5.1 |
 | 5.3 | `POST /api/v1/auth/login`: `OAuth2PasswordRequestForm` → access token; `GET /auth/me` | 1,5 sa | 5.2 |
 | 5.4 | `dependencies.py` → `get_current_admin`: `OAuth2PasswordBearer` + token doğrulama + 401/403 | 1,5 sa | 5.3 |
-| 5.5 | Projects ve Posts'un tüm `POST`/`PUT`/`PATCH`/`DELETE` endpoint'lerini `Depends(get_current_admin)` ile koru; okuma public kalsın | 1 sa | 5.4 |
+| 5.5 | Projects ve Blog'un tüm `POST`/`PUT`/`PATCH`/`DELETE` endpoint'lerini `Depends(get_current_admin)` ile koru; okuma public kalsın | 1 sa | 5.4 |
 | 5.6 | `scripts/create_admin.py`: env'den e-posta+parola alıp admin oluşturur. **Public register endpoint'i açma** | 30 dk | 5.2 |
 | 5.7 | `test_auth.py`: token'sız yazma → 401, geçersiz/süresi dolmuş token → 401, geçerli token → 200 | 1 sa | 5.5 |
 
@@ -328,7 +328,7 @@ Postgres'e geçişi **erken** yapıyoruz. Sebep: SQLite'ta çalışan `JSON` kol
 | 2 | 19 Ağu, Çar | Faz 1 | Router aggregation + şema ayrımı |
 | 3 | 20 Ağu, Per | Faz 1 + 2 | Project CRUD tamam, testler yeşil |
 | 4 | 21 Ağu, Cum | Faz 3 | Alembic çalışıyor, Postgres ayakta |
-| 5 | 22 Ağu, Cmt | Faz 4 | Post modeli + şemalar + repository |
+| 5 | 22 Ağu, Cmt | Faz 4 | Blog modeli + şemalar + repository |
 | 6 | 23 Ağu, Paz | Faz 4 | Blog endpoint'leri + testler |
 | 7 | 24 Ağu, Pzt | Faz 5 | User modeli + security katmanı |
 | 8 | 25 Ağu, Sal | Faz 5 | Login + korumalı yazma endpoint'leri |

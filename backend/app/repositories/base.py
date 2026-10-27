@@ -4,6 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
+from app.utils.slug import slugify
 from app.models.base import BaseModel as MyBase
 
 ModelType = TypeVar("ModelType", bound=MyBase)
@@ -13,6 +14,9 @@ class BaseRepository(Generic[ModelType]):
     def __init__(self, model: Type[ModelType], session: AsyncSession):
         self.model = model
         self.session = session
+
+    def _before_save(self, obj: ModelType, changes:dict) -> None:
+        pass
 
     async def get_page(self, page: int, size: int) -> tuple[List[ModelType], int]:
         total = (await self.session.execute(select(func.count()).select_from(self.model))).scalar_one()
@@ -25,8 +29,13 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(query)
         return result.scalars().all()
 
-    async def get_by_id(self, id: int) -> ModelType | None:
+    async def get_by_id(self, id: int, published_only: bool = False) -> ModelType | None:
         query = select(self.model).where(self.model.id == id)
+        result = await self.session.execute(query)
+        return result.scalars().first()
+
+    async def get_by_slug(self, slug: str, published_only: bool = False) -> ModelType | None:
+        query = select(self.model).where(self.model.slug == slug)
         result = await self.session.execute(query)
         return result.scalars().first()
 
@@ -35,11 +44,6 @@ class BaseRepository(Generic[ModelType]):
         self.session.add(data)
         await self._commit(data)
         return data
-
-    async def get_by_slug(self, slug: str) -> ModelType | None:
-        query = select(self.model).where(self.model.slug == slug)
-        result = await self.session.execute(query)
-        return result.scalars().first()
 
     async def delete(self, id: int) -> ModelType:
         obj = await self.get_by_id(id)
@@ -60,8 +64,8 @@ class BaseRepository(Generic[ModelType]):
         for key, value in update_data.items():
             setattr(obj, key, value)
 
+        self._before_save(obj, update_data)
         await self._commit(obj)
-
         return obj
 
     async def put_by_slug(self, slug: str, obj_in: ModelType) -> ModelType:
@@ -75,6 +79,7 @@ class BaseRepository(Generic[ModelType]):
         for key, value in update_data.items():
             setattr(obj, key, value)
 
+        self._before_save(obj, update_data)
         await self._commit(obj)
 
         return obj
@@ -88,6 +93,7 @@ class BaseRepository(Generic[ModelType]):
         for key, value in update_data.items():
             setattr(obj, key, value)
 
+        self._before_save(obj, update_data)
         await self._commit(obj)
 
         return obj
@@ -101,6 +107,7 @@ class BaseRepository(Generic[ModelType]):
         for key, value in update_data.items():
             setattr(obj, key, value)
 
+        self._before_save(obj, update_data)
         await self._commit(obj)
         return obj
 
@@ -116,3 +123,11 @@ class BaseRepository(Generic[ModelType]):
 
         await self.session.refresh(obj)
         return obj
+
+    async def _unique_slug(self, name: str) -> str:
+        base_slug = slugify(name, max_length=130)
+        slug, n = base_slug, 2
+        while await self.get_by_slug(slug):
+            slug = f"{base_slug}-{n}"
+            n += 1
+        return slug

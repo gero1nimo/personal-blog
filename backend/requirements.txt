@@ -16,6 +16,10 @@ anyio==4.14.2
     #   imagekitio
     #   starlette
     #   watchfiles
+argon2-cffi==25.1.0
+    # via pwdlib
+argon2-cffi-bindings==26.1.0
+    # via argon2-cffi
 asyncpg==0.32.0
     # via -r requirements.in
 certifi==2026.7.22
@@ -23,6 +27,8 @@ certifi==2026.7.22
     #   httpcore
     #   httpx
     #   sentry-sdk
+cffi==2.1.1
+    # via argon2-cffi-bindings
 click==8.4.2
     # via
     #   rich-toolkit
@@ -87,6 +93,10 @@ markupsafe==3.0.3
     #   mako
 mdurl==0.1.2
     # via markdown-it-py
+pwdlib==0.3.1
+    # via -r requirements.in
+pycparser==3.12
+    # via cffi
 pydantic==2.13.4
     # via
     #   -r requirements.in
@@ -106,6 +116,8 @@ pydantic-settings==2.15.0
     #   fastapi
 pygments==2.21.0
     # via rich
+pyjwt==2.15.1
+    # via -r requirements.in
 python-dotenv==1.2.3
     # via
     #   pydantic-settings

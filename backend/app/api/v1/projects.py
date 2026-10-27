@@ -1,22 +1,26 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db import db_dependency
-from app.schemas import ProjectUpdate, ProjectCreate, ProjectRead, Page
 from app.repositories import ProjectRepository
+from app.schemas import ProjectUpdate, ProjectCreate, ProjectRead, Page
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @router.get("/", response_model=Page[ProjectRead])
-async def get_all_projects(page: int = Query(1, ge=1), size: int = Query(20, ge=1, le=100),
-                           session=Depends(db_dependency)):
+async def get_all_projects(page: int = Query(1, ge=1),
+                           size: int = Query(20, ge=1, le=100),
+                           session: AsyncSession = Depends(db_dependency)
+                           ):
     items, total = await ProjectRepository(session).get_page(page, size)
     return Page.create(items, total, page, size)
 
 
 @router.get("/{project_id}", response_model=ProjectRead)
 async def get_project_by_id(project_id: int,
-                            session: AsyncSession = Depends(db_dependency)):
+                            session: AsyncSession = Depends(db_dependency)
+                            ):
     repo = ProjectRepository(session=session)
     result = await repo.get_by_id(project_id)
     if not result:
@@ -28,7 +32,9 @@ async def get_project_by_id(project_id: int,
 
 
 @router.get("/slug/{project_slug}", response_model=ProjectRead)
-async def get_project_by_slug(project_slug: str, session: AsyncSession = Depends(db_dependency)):
+async def get_project_by_slug(project_slug: str,
+                              session: AsyncSession = Depends(db_dependency)
+                              ):
     repo = ProjectRepository(session=session)
     result = await repo.get_by_slug(project_slug)
     if not result:
@@ -41,7 +47,8 @@ async def get_project_by_slug(project_slug: str, session: AsyncSession = Depends
 
 @router.post("/")
 async def create_project(project_data: ProjectCreate,
-                         session: AsyncSession = Depends(db_dependency)):
+                         session: AsyncSession = Depends(db_dependency)
+                         ):
     repo = ProjectRepository(session)
     result = await repo.create(project_data)
     if not result:
@@ -54,7 +61,9 @@ async def create_project(project_data: ProjectCreate,
 
 
 @router.delete("/{project_id}")
-async def delete_project(project_id: int, session: AsyncSession = Depends(db_dependency)):
+async def delete_project(project_id: int,
+                         session: AsyncSession = Depends(db_dependency)
+                         ):
     repo = ProjectRepository(session)
     result = await repo.delete(project_id)
     if not result:
@@ -66,23 +75,30 @@ async def delete_project(project_id: int, session: AsyncSession = Depends(db_dep
 
 
 @router.put("/{project_id}", response_model=ProjectRead)
-async def put_project_by_id(project_id: int, project_data: ProjectCreate,
-                            session: AsyncSession = Depends(db_dependency)):
+async def put_project_by_id(project_id: int,
+                            project_data: ProjectCreate,
+                            session: AsyncSession = Depends(db_dependency)
+                            ):
     repo = ProjectRepository(session)
     result = await repo.put(project_id, project_data)
     return result
 
 
 @router.put("/slug/{project_slug}", response_model=ProjectRead)
-async def put_project_by_slug(project_slug: str, project_data: ProjectCreate,
-                              session: AsyncSession = Depends(db_dependency)):
+async def put_project_by_slug(project_slug: str,
+                              project_data: ProjectCreate,
+                              session: AsyncSession = Depends(db_dependency)
+                              ):
     repo = ProjectRepository(session)
     result = await repo.put_by_slug(project_slug, project_data)
     return result
 
 
 @router.patch("/{project_id}")
-async def patch_by_id(project_id: int, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+async def patch_by_id(project_id: int,
+                      project_data: ProjectUpdate,
+                      session: AsyncSession = Depends(db_dependency)
+                      ):
     repo = ProjectRepository(session)
     result = await repo.patch(project_id, project_data)
     if not result:
@@ -95,7 +111,10 @@ async def patch_by_id(project_id: int, project_data: ProjectUpdate, session: Asy
 
 
 @router.patch("/slug/{project_slug}")
-async def patch_by_slug(project_slug: str, project_data: ProjectUpdate, session: AsyncSession = Depends(db_dependency)):
+async def patch_by_slug(project_slug: str,
+                        project_data: ProjectUpdate,
+                        session: AsyncSession = Depends(db_dependency)
+                        ):
     repo = ProjectRepository(session)
     result = await repo.patch_by_slug(project_slug, project_data)
     if not result:

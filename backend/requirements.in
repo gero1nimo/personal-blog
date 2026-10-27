@@ -8,3 +8,5 @@ pydantic-settings
 greenlet
 alembic
 asyncpg
+pyjwt
+pwdlib[argon2]

@@ -1,15 +1,12 @@
-from .base import BaseModel
-from sqlmodel import Field
 from typing import Optional
 
+from sqlmodel import Field
 
-class UserRole:
-    USER = "user"
-    ADMIN = "admin"
+from .base import BaseModel
 
-class User(BaseModel):
-    __tablename__= "users"
-    name: Optional[str]
-    email: str
-    password: str
-    role: UserRole = Field(default=UserRole.USER)
+
+class User(BaseModel, table=True):
+    __tablename__ = "users"
+    name: Optional[str] = Field(default=None, max_length=100)
+    email: str = Field(unique=True, max_length=100, index=True)
+    hashed_password: str

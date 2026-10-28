@@ -2,10 +2,11 @@ from fastapi import APIRouter, Query, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import db_dependency
+from app.dependencies import get_current_admin
 from app.repositories import BlogRepository
 from app.schemas import BlogRead, Page, BlogCreate, BlogUpdate
 
-router = APIRouter(prefix="/admin/blogs", tags=["admin-blogs"])
+router = APIRouter(prefix="/admin/blogs", tags=["admin-blogs"], dependencies=[Depends(get_current_admin)])
 
 
 # GET / Page
@@ -63,7 +64,7 @@ async def create_blog(blog_data: BlogCreate,
 
 
 # Delete Blog Post
-@router.delete("/{blog_id}")
+@router.delete("/{blog_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_blog(blog_id: int,
                       session: AsyncSession = Depends(db_dependency)
                       ):

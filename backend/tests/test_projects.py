@@ -1,4 +1,6 @@
-URL = "/api/v1/projects/"
+PUBLIC_URL = "/api/v1/projects/"
+ADMIN_URL = "/api/v1/admin/projects/"
+
 
 def make_payload(**overrides):
     data = {
@@ -11,20 +13,102 @@ def make_payload(**overrides):
 
 
 async def create_project(client, **overrides):
-    r = await client.post(URL, json=make_payload(**overrides))
+    r = await client.post(ADMIN_URL, json=make_payload(**overrides))
     assert r.status_code in (200, 201), r.text
     return r.json()
 
-async def test_list_empty(client):
-    r = await client.get(URL)
-    assert r.status_code == 200
-    assert r.json() == {"items": [], "total": 0, "page": 1, "size": 20, "pages":0}
 
+# ---------------------------------------------------------------- PUBLIC (okuma)
+
+async def test_list_empty(client):
+    r = await client.get(PUBLIC_URL)
+    assert r.status_code == 200
+    assert r.json() == {"items": [], "total": 0, "page": 1, "size": 20, "pages": 0}
+
+
+async def test_get_by_id(client):
+    created = await create_project(client)
+    r = await client.get(f"{PUBLIC_URL}{created['id']}")
+    assert r.status_code == 200
+    assert r.json()["name"] == "My App"
+
+
+async def test_get_by_slug(client):
+    created = await create_project(client, name="My App")
+    r = await client.get(f"{PUBLIC_URL}slug/{created['slug']}")
+    assert r.status_code == 200
+    assert r.json()["id"] == created["id"]
+
+
+async def test_get_not_found(client):
+    r = await client.get(f"{PUBLIC_URL}999")
+    assert r.status_code == 404
+
+
+async def test_get_by_slug_not_found(client):
+    assert (await client.get(f"{PUBLIC_URL}slug/nope")).status_code == 404
+
+
+async def test_pagination(client):
+    for i in range(5):
+        await create_project(client, name=f"Project {i}")
+
+    r = await client.get(PUBLIC_URL, params={"page": 1, "size": 2})
+    body = r.json()
+    assert body["total"] == 5
+    assert body["pages"] == 3
+    assert len(body["items"]) == 2
+
+    r = await client.get(PUBLIC_URL, params={"page": 3, "size": 2})
+    assert len(r.json()["items"]) == 1   # son sayfada 1 kayıt
+
+
+async def test_pagination_invalid_params(client):
+    assert (await client.get(PUBLIC_URL, params={"page": 0})).status_code == 422
+    assert (await client.get(PUBLIC_URL, params={"size": 101})).status_code == 422
+
+
+async def test_public_router_has_no_write_endpoints(client):
+    created = await create_project(client)
+    pid = created["id"]
+    assert (await client.post(PUBLIC_URL, json=make_payload())).status_code == 405
+    assert (await client.put(f"{PUBLIC_URL}{pid}", json=make_payload())).status_code == 405
+    assert (await client.patch(f"{PUBLIC_URL}{pid}", json={"description": "x"})).status_code == 405
+    assert (await client.delete(f"{PUBLIC_URL}{pid}")).status_code == 405
+    # kayıt bozulmadı
+    assert (await client.get(f"{PUBLIC_URL}{pid}")).status_code == 200
+
+
+# --------------------------------------------------------------- ADMIN (okuma)
+
+async def test_admin_list_and_get(client):
+    created = await create_project(client, name="My App")
+
+    r = await client.get(ADMIN_URL)
+    assert r.status_code == 200
+    assert r.json()["total"] == 1
+
+    assert (await client.get(f"{ADMIN_URL}{created['id']}")).status_code == 200
+    assert (await client.get(f"{ADMIN_URL}slug/{created['slug']}")).status_code == 200
+
+
+async def test_admin_get_not_found(client):
+    assert (await client.get(f"{ADMIN_URL}999")).status_code == 404
+    assert (await client.get(f"{ADMIN_URL}slug/nope")).status_code == 404
+
+
+# ------------------------------------------------------------ ADMIN (oluşturma)
 
 async def test_create_project(client):
     created = await create_project(client, name="My App")
     assert created["id"] == 1
     assert created["slug"] == "my-app"
+
+
+async def test_create_response_is_camel_case(client):
+    created = await create_project(client, name="My App", techStack=["py"])
+    assert "createdAt" in created
+    assert "created_at" not in created
 
 
 async def test_create_duplicate_name_gets_unique_slug(client):
@@ -39,63 +123,27 @@ async def test_slug_turkish_characters(client):
     assert created["slug"] == "cilgin-sise"
 
 
-async def test_get_by_id(client):
-    created = await create_project(client)
-    r = await client.get(f"{URL}{created['id']}")
-    assert r.status_code == 200
-    assert r.json()["name"] == "My App"
-
-
-async def test_get_by_slug(client):
-    created = await create_project(client, name="My App")
-    r = await client.get(f"{URL}slug/{created['slug']}")
-    assert r.status_code == 200
-    assert r.json()["id"] == created["id"]
-
-
-async def test_get_not_found(client):
-    r = await client.get(f"{URL}999")
-    assert r.status_code == 404
-
-
 async def test_create_invalid_status_returns_422(client):
-    r = await client.post(URL, json=make_payload(status="bogus"))
+    r = await client.post(ADMIN_URL, json=make_payload(status="bogus"))
     assert r.status_code == 422
 
 
 async def test_create_missing_name_returns_422(client):
-    r = await client.post(URL, json={"description": "x", "status": "planned"})
+    r = await client.post(ADMIN_URL, json={"description": "x", "status": "planned"})
     assert r.status_code == 422
 
 
 async def test_create_extra_field_returns_422(client):
-    r = await client.post(URL, json=make_payload(slug="hacked"))
+    r = await client.post(ADMIN_URL, json=make_payload(slug="hacked"))
     assert r.status_code == 422   # extra="forbid"
 
 
-async def test_pagination(client):
-    for i in range(5):
-        await create_project(client, name=f"Project {i}")
-
-    r = await client.get(URL, params={"page": 1, "size": 2})
-    body = r.json()
-    assert body["total"] == 5
-    assert body["pages"] == 3
-    assert len(body["items"]) == 2
-
-    r = await client.get(URL, params={"page": 3, "size": 2})
-    assert len(r.json()["items"]) == 1   # son sayfada 1 kayıt
-
-
-async def test_pagination_invalid_params(client):
-    assert (await client.get(URL, params={"page": 0})).status_code == 422
-    assert (await client.get(URL, params={"size": 101})).status_code == 422
-
+# ----------------------------------------------------------------- ADMIN (PUT)
 
 async def test_put_replaces_resource(client):
     created = await create_project(client, name="My App", tags=["a"])
     r = await client.put(
-        f"{URL}{created['id']}",
+        f"{ADMIN_URL}{created['id']}",
         json=make_payload(name="New Name", description="New desc", status="completed"),
     )
     assert r.status_code == 200
@@ -109,7 +157,7 @@ async def test_put_replaces_resource(client):
 async def test_put_by_slug(client):
     created = await create_project(client, name="My App")
     r = await client.put(
-        f"{URL}slug/{created['slug']}",
+        f"{ADMIN_URL}slug/{created['slug']}",
         json=make_payload(name="Renamed", status="archived"),
     )
     assert r.status_code == 200
@@ -117,68 +165,73 @@ async def test_put_by_slug(client):
 
 
 async def test_put_nonexistent_id_creates_new_project(client):
-    r = await client.put(f"{URL}999", json=make_payload(name="Brand New"))
+    r = await client.put(f"{ADMIN_URL}999", json=make_payload(name="Brand New"))
     assert r.status_code == 200
     assert r.json()["name"] == "Brand New"
 
     # İstenen id (999) yok sayılır, sunucu kendi id'sini verir
     assert r.json()["id"] != 999
-    assert (await client.get(URL)).json()["total"] == 1
+    assert (await client.get(PUBLIC_URL)).json()["total"] == 1
+
+
+async def test_put_by_slug_nonexistent_creates(client):
+    r = await client.put(f"{ADMIN_URL}slug/nope", json=make_payload(name="X"))
+    assert r.status_code == 200
 
 
 async def test_put_partial_body_returns_422(client):
     created = await create_project(client)
-    r = await client.put(f"{URL}{created['id']}", json={"name": "Only name"})
+    r = await client.put(f"{ADMIN_URL}{created['id']}", json={"name": "Only name"})
     assert r.status_code == 422
 
 
+# --------------------------------------------------------------- ADMIN (PATCH)
+
 async def test_patch_updates_only_given_fields(client):
     created = await create_project(client, name="My App", description="Old")
-    r = await client.patch(f"{URL}{created['id']}", json={"description": "New"})
+    r = await client.patch(f"{ADMIN_URL}{created['id']}", json={"description": "New"})
     assert r.status_code == 200
+    assert r.json()["description"] == "New"    # yanıt camelCase ve ProjectRead biçiminde
 
-    got = (await client.get(f"{URL}{created['id']}")).json()
+    got = (await client.get(f"{PUBLIC_URL}{created['id']}")).json()
     assert got["description"] == "New"
     assert got["name"] == "My App"             # dokunulmadı
     assert got["slug"] == created["slug"]
 
 
+async def test_patch_by_slug(client):
+    created = await create_project(client, name="My App", description="Old")
+    r = await client.patch(f"{ADMIN_URL}slug/{created['slug']}", json={"description": "New"})
+    assert r.status_code == 200
+    got = (await client.get(f"{PUBLIC_URL}{created['id']}")).json()
+    assert got["description"] == "New"
+
+
 async def test_patch_cannot_change_slug(client):
     created = await create_project(client)
-    r = await client.patch(f"{URL}{created['id']}", json={"slug": "hacked"})
+    r = await client.patch(f"{ADMIN_URL}{created['id']}", json={"slug": "hacked"})
     assert r.status_code == 422                # extra="forbid"
 
 
 async def test_patch_not_found(client):
-    r = await client.patch(f"{URL}999", json={"description": "x"})
+    r = await client.patch(f"{ADMIN_URL}999", json={"description": "x"})
     assert r.status_code == 404
 
+
+async def test_patch_by_slug_not_found(client):
+    r = await client.patch(f"{ADMIN_URL}slug/nope", json={"description": "x"})
+    assert r.status_code == 404
+
+
+# -------------------------------------------------------------- ADMIN (DELETE)
 
 async def test_delete_project(client):
     created = await create_project(client)
-    r = await client.delete(f"{URL}{created['id']}")
-    assert r.status_code in (200, 204)
-    assert (await client.get(f"{URL}{created['id']}")).status_code == 404
+    r = await client.delete(f"{ADMIN_URL}{created['id']}")
+    assert r.status_code == 204
+    assert (await client.get(f"{PUBLIC_URL}{created['id']}")).status_code == 404
 
 
 async def test_delete_not_found(client):
-    r = await client.delete(f"{URL}999")
-    assert r.status_code == 404
-
-async def test_get_by_slug_not_found(client):
-    assert (await client.get(f"{URL}slug/nope")).status_code == 404
-
-async def test_put_by_slug_nonexistent_creates(client):
-    r = await client.put(f"{URL}slug/nope", json=make_payload(name="X"))
-    assert r.status_code == 200
-
-async def test_patch_by_slug(client):
-    created = await create_project(client, name="My App", description="Old")
-    r = await client.patch(f"{URL}slug/{created['slug']}", json={"description": "New"})
-    assert r.status_code == 200
-    got = (await client.get(f"{URL}{created['id']}")).json()
-    assert got["description"] == "New"
-
-async def test_patch_by_slug_not_found(client):
-    r = await client.patch(f"{URL}slug/nope", json={"description": "x"})
+    r = await client.delete(f"{ADMIN_URL}999")
     assert r.status_code == 404

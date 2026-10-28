@@ -192,7 +192,7 @@ async def test_patch_and_delete_not_found(client):
 async def test_delete_blog(client):
     blog = await create_blog(client)
     r = await client.delete(f"{ADMIN_URL}{blog['id']}")
-    assert r.status_code == 200
+    assert r.status_code == 204
     assert (await client.get(f"{ADMIN_URL}{blog['id']}")).status_code == 404
     assert (await client.delete(f"{ADMIN_URL}{blog['id']}")).status_code == 404
 

@@ -66,7 +66,7 @@ frontend/
 - **Posts Grid:** Blog articles displayed in cards
 - **Search:** Search articles by title or content
 - **Tag Filter:** Filter posts by tags
-- **Newsletter:** Email subscription form
+- **Article Detail:** Full post view at `/blog/:slug`
 
 ## Components
 
@@ -79,40 +79,36 @@ Site-wide footer with quick links, contact info, and social media links.
 ### Hero
 Eye-catching hero section with animated background, stats, and call-to-action buttons.
 
-### ProjectCard
-Displays project information including:
-- Project name and status badge
-- Description (truncated)
-- Tech stack tags
-- Links to live demo and GitHub
+### FeaturedProjectBanner
+Shows the first `featured` project from the API on the home page (hidden if none).
 
-### BlogCard
-Displays blog post with:
-- Title and excerpt
-- Tags
-- View count
-- Read more link
+### ContactSection
+Contact form that posts to `POST /contact/`, including a hidden honeypot field.
 
 ### SkillsSection
 Grid display of skills organized by category (Frontend, Backend, Database, Tools & Cloud).
 
 ## API Integration
 
-The `src/services/api.js` file provides:
+The `src/services/api.js` file wraps the backend `/api/v1` contract (camelCase JSON, paginated lists, Bearer token):
 
 ```javascript
-// Base configuration
-const API_BASE_URL = 'http://localhost:8000';
+// Base URL comes from VITE_API_URL (see .env.example),
+// defaulting to http://localhost:8000/api/v1
 
-// Projects API
-projectsApi.getAll()      // GET /projects/
-projectsApi.getById(id)   // GET /projects/{id}
-projectsApi.create(data)  // POST /projects/
+// Public
+projectsApi.getAll({ page, size })   // GET /projects/
+projectsApi.getBySlug(slug)          // GET /projects/slug/{slug}
+blogApi.getAll({ page, size, tag })  // GET /blogs/
+blogApi.getBySlug(slug)              // GET /blogs/slug/{slug}
+contactApi.send(data)                // POST /contact/
 
-// Blog API
-blogApi.getAll()          // GET /blogposts/
-blogApi.getById(id)       // GET /blogposts/{id}
-blogApi.create(data)      // POST /blogposts/
+// Auth + admin (Bearer)
+authApi.login(email, password)       // POST /auth/login (form-urlencoded)
+authApi.me()                         // GET /auth/me
+adminProjectsApi / adminBlogApi      // GET/POST/PUT/PATCH/DELETE /admin/...
+adminContactApi                      // list / markRead / remove on /admin/contact
+mediaApi.upload(file)                // ImageKit signed upload
 ```
 
 ## Getting Started
@@ -149,12 +145,13 @@ npm run dev
 Tailwind is configured via the Vite plugin in `vite.config.js`. Customizations can be added by extending the default theme.
 
 ### API Base URL
-Update `API_BASE_URL` in `src/services/api.js` to point to your backend:
+Set the backend URL via the `VITE_API_URL` environment variable. Copy `.env.example` to `.env`:
 
-```javascript
-const API_BASE_URL = 'http://localhost:8000'; // Development
-// const API_BASE_URL = 'https://api.yourdomain.com'; // Production
+```bash
+VITE_API_URL=http://localhost:8000/api/v1
 ```
+
+If unset, it defaults to `http://localhost:8000/api/v1`.
 
 ## Customization
 

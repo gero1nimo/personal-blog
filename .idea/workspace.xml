@@ -6,6 +6,26 @@
   <component name="ChangeListManager">
     <list default="true" id="bc4c1136-732e-4594-a11d-0362f34c076d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/BlogCard.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ContactSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ContactSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/FeaturedProjectBanner.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/FeaturedProjectBanner.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ProjectCard.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/AdminSidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/AdminSidebar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/AdminTopbar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/AdminTopbar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/DataTable.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/DataTable.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/ProtectedRoute.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/ProtectedRoute.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/layouts/AdminLayout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/layouts/AdminLayout.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Blog.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Blog.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Portfolio.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Portfolio.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProjectDetail.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProjectDetail.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/admin/BlogManager.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/admin/BlogManager.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/admin/Dashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/admin/Dashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/admin/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/admin/Login.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/admin/ProjectManager.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/admin/ProjectManager.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/services/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/api.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,7 +183,7 @@
       <workItem from="1793199288321" duration="2999000" />
       <workItem from="1793306488913" duration="1089000" />
       <workItem from="1793307595222" duration="2909000" />
-      <workItem from="1793364286098" duration="2075000" />
+      <workItem from="1793364286098" duration="2996000" />
     </task>
     <servers />
   </component>

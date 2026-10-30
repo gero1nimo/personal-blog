@@ -8,7 +8,8 @@ const Hero = () => {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    setIsLoaded(true);
+    // Giriş animasyonunu bir sonraki render karesine erteliyoruz (senkron setState uyarısını giderir).
+    const raf = requestAnimationFrame(() => setIsLoaded(true));
     
     // Fetch profile data from backend
     const fetchProfile = async () => {
@@ -20,6 +21,8 @@ const Hero = () => {
       }
     };
     fetchProfile();
+
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const navLinks = [

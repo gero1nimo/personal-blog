@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { projectsApi } from "../services/api";
 
 export default function ProjectDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,17 +13,20 @@ export default function ProjectDetail() {
       try {
         setLoading(true);
         setError("");
-        const res = await projectsApi.getById(id); // GET /projects/{id}
-        setProject(res?.data ?? null);
+        const data = await projectsApi.getBySlug(slug); // GET /projects/slug/{slug}
+        setProject(data ?? null);
       } catch (err) {
-        setError("Project could not be loaded.");
+        setProject(null);
+        setError(
+          err.response?.status === 404 ? "Project not found." : "Project could not be loaded."
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchProject();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -51,22 +54,23 @@ export default function ProjectDetail() {
     );
   }
 
+  // Backend alanları camelCase gelir (ProjectRead). Aşağıdaki JSX eski adları kullandığı için
+  // burada eşleniyor; arayüzü yenilerken doğrudan camelCase adlara geçebilirsin.
   const {
-    title,
     name,
     description,
-    long_description,
     status,
-    technologies,
-    tech_stack,
-    github_url,
-    live_url,
-    image_url,
-    created_at,
+    techStack,
+    link: live_url,
+    githubLink: github_url,
+    createdAt: created_at,
   } = project;
+  // Backend'de projeler için görsel ve uzun açıklama alanı yok.
+  const image_url = null;
+  const long_description = null;
 
-  const displayTitle = title || name || "Untitled Project";
-  const displayTech = technologies || tech_stack || [];
+  const displayTitle = name || "Untitled Project";
+  const displayTech = techStack || [];
 
   return (
     <section className="bg-slate-950 text-slate-100 px-4 py-16 md:py-20">
@@ -154,4 +158,4 @@ export default function ProjectDetail() {
       </div>
     </section>
   );
-}
+}

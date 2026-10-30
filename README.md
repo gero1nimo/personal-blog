@@ -67,19 +67,28 @@ fastapi/
 
 ## Backend API Summary
 
-Base URL: `http://localhost:8000`
+Base URL: `http://localhost:8000/api/v1`
 
-- `GET /` -> health/welcome response
-- `GET /profile/` -> read profile data
-- `PUT /profile/` -> update profile
-- `GET /projects/` -> list projects
-- `POST /projects/` -> create project
-- `GET /projects/{project_id}` -> get project by id
-- `DELETE /projects/{project_id}` -> delete project by id
-- `GET /blogs/` -> list blog posts
-- `POST /blogs/` -> create blog post
-- `GET /blogs/{slug}` -> get blog post by slug
-- `DELETE /blogs/{slug}` -> delete blog post by slug
+All JSON is camelCase. List endpoints are paginated: `{ items, total, page, size, pages }` (max `size` 100).
+
+### Auth
+- `POST /auth/login` -> form-urlencoded (`username` = email), returns `{ access_token, token_type }` (token lifetime 15 min, no refresh)
+- `GET /auth/me` -> current user (Bearer required)
+
+### Public
+- `GET /projects/?page&size` -> paginated projects
+- `GET /projects/{id}` / `GET /projects/slug/{slug}`
+- `GET /blogs/?page&size&tag` -> paginated published posts (list item has no `content`)
+- `GET /blogs/{id}` / `GET /blogs/slug/{slug}` -> full post (adds `content`, `isPublished`)
+- `POST /contact/` -> `{ name, email, subject, message, website }` (`website` is a honeypot); rate limited (5/min, 30/hour)
+
+### Admin (Bearer required)
+- `/admin/projects` and `/admin/blogs` -> `GET` list / `GET {id}` / `GET slug/{slug}` / `POST` / `PUT` / `PATCH` / `DELETE`
+- `/admin/contact` -> `GET ?is_read` / `GET {id}` / `PATCH { isRead }` / `DELETE`
+- `GET /admin/media/auth` / `DELETE /admin/media/{fileId}` -> ImageKit signed-upload auth / delete
+
+Project `status` is one of: `planned` | `in-progress` | `completed` | `archived`.
+The client never sends `id`, `slug`, `createdAt`, `updatedAt`, `readingTime` (the server generates `slug` and `readingTime`).
 
 ## Quick Start
 
@@ -105,8 +114,9 @@ Frontend dev server: `http://localhost:5173`
 
 ## Current Integration Notes
 
-- `frontend/src/services/api.js` uses `/blogposts/` endpoints, but backend currently defines `/blogs/` endpoints.
-- Backend uses SQLModel with a PostgreSQL Psycopg driver in `backend/app/db.py`; if runtime import errors occur, ensure required packages such as `sqlmodel` and `psycopg` are installed in the backend environment.
+- `frontend/src/services/api.js` targets `/api/v1` and is aligned with the contract above (camelCase, paginated lists, Bearer token, ImageKit signed upload).
+- The API base URL is set via `VITE_API_URL` (see `frontend/.env.example`); it defaults to `http://localhost:8000/api/v1`.
+- Backend `CORS_ORIGINS` must include `http://localhost:5173` for the Vite dev server to call the API.
 
 ## Tech Stack
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api'; // Az önce yazdığımız Axios motoru
+import { authApi, setToken, getErrorMessage } from '../../services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,35 +16,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // DİKKAT: FastAPI varsayılan olarak OAuth2 kullanır ve login verisini 
-      // JSON olarak değil, Form Data (application/x-www-form-urlencoded) olarak bekler.
-      // Bu yüzden veriyi URLSearchParams ile paketliyoruz.
-      const params = new URLSearchParams();
-      params.append('username', email); // FastAPI OAuth2 varsayılan olarak 'username' alanı arar
-      params.append('password', password);
-
-      const response = await api.post('/login/access-token', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
-
-      // Backend'den gelen token'ı yakala (Genelde access_token olarak döner)
-      const { access_token } = response.data;
+      // Backend OAuth2 form verisi bekler (JSON değil); detaylar authApi.login içinde.
+      const { access_token } = await authApi.login(email, password);
 
       if (access_token) {
-        // Token'ı tarayıcıya kaydet
-        localStorage.setItem('access_token', access_token);
-        
-        // Başarılı giriş sonrası Dashboard'a yönlendir
+        setToken(access_token);
         navigate('/admin/dashboard');
       }
     } catch (err) {
       console.error("Giriş hatası:", err);
-      // Backend'den gelen spesifik bir hata mesajı varsa onu göster, yoksa genel mesaj ver
-      setError(
-        err.response?.data?.detail || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.'
-      );
+      setError(getErrorMessage(err, 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.'));
     } finally {
       setLoading(false);
     }
@@ -107,4 +88,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Login;

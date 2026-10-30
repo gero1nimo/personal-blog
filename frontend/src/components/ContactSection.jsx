@@ -1,14 +1,17 @@
 import { useState } from 'react';
+import { contactApi, getErrorMessage } from '../services/api';
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
+    subject: '',
     message: '',
+    website: '', // honeypot: gerçek kullanıcı boş bırakır
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -17,15 +20,21 @@ const ContactSection = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setIsSubmitting(true);
-    // Simulate submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Backend yalnızca şemadaki alanları kabul eder (extra="forbid").
+      await contactApi.send(formData);
       setSubmitted(true);
-      setFormData({ name: '', email: '', phone: '', message: '' });
-    }, 1500);
+      setFormData({ name: '', email: '', subject: '', message: '', website: '' });
+    } catch (err) {
+      // getErrorMessage 401/404/409/422 ve 429'u tek noktadan ele alır.
+      setError(getErrorMessage(err, 'Mesaj gönderilemedi. Lütfen tekrar deneyin.'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -44,14 +53,14 @@ const ContactSection = () => {
               <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
               <span className="text-blue-400 text-xs tracking-[0.3em] uppercase font-medium">Get in Touch</span>
             </div>
-            
+
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight leading-tight">
               Let's Build
               <span className="block gradient-text-accent">Something Great</span>
             </h2>
-            
+
             <p className="text-gray-400 text-lg mb-10 max-w-md">
-              Have a project in mind or just want to chat about opportunities? 
+              Have a project in mind or just want to chat about opportunities?
               I'm always excited to discuss new ideas and collaborations.
             </p>
 
@@ -139,6 +148,27 @@ const ContactSection = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Honeypot: ekran dışı, gerçek kullanıcı görmez/doldurmaz */}
+                <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+                  <label>
+                    Website
+                    <input
+                      type="text"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleChange}
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                  </label>
+                </div>
+
+                {error && (
+                  <div className="p-3 bg-red-500/10 text-red-400 text-sm border border-red-500/30 rounded-lg">
+                    {error}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Name Field */}
                   <div className="relative group">
@@ -148,6 +178,7 @@ const ContactSection = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Your Name"
+                      maxLength={50}
                       className="w-full bg-transparent border-0 border-b border-gray-800 text-white placeholder-gray-600 py-4 px-0 focus:outline-none focus:border-blue-400 transition-colors text-base peer"
                       required
                     />
@@ -169,15 +200,17 @@ const ContactSection = () => {
                   </div>
                 </div>
 
-                {/* Phone Field */}
+                {/* Subject Field */}
                 <div className="relative">
                   <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
                     onChange={handleChange}
-                    placeholder="Phone Number (Optional)"
+                    placeholder="Subject"
+                    maxLength={50}
                     className="w-full bg-transparent border-0 border-b border-gray-800 text-white placeholder-gray-600 py-4 px-0 focus:outline-none focus:border-blue-400 transition-colors text-base peer"
+                    required
                   />
                   <div className="absolute bottom-0 left-0 w-0 h-px bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 peer-focus:w-full"></div>
                 </div>
@@ -190,6 +223,7 @@ const ContactSection = () => {
                     onChange={handleChange}
                     placeholder="Tell me about your project..."
                     rows={4}
+                    maxLength={1000}
                     className="w-full bg-transparent border-0 border-b border-gray-800 text-white placeholder-gray-600 py-4 px-0 focus:outline-none focus:border-blue-400 transition-colors text-base resize-none peer"
                     required
                   />

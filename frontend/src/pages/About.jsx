@@ -4,7 +4,9 @@ const About = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    setIsLoaded(true);
+    // Giriş animasyonunu bir sonraki render karesine erteliyoruz (senkron setState uyarısını giderir).
+    const raf = requestAnimationFrame(() => setIsLoaded(true));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const education = [

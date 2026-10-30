@@ -1,9 +1,43 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { projectsApi } from '../services/api';
+
 const FeaturedProjectBanner = () => {
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadFeatured = async () => {
+      try {
+        // Backend'de ?featured filtresi yok; listeyi çekip ilk featured=true projeyi seçiyoruz.
+        const data = await projectsApi.getAll({ size: 100 });
+        if (cancelled) return;
+        const featured = (data?.items ?? []).find((p) => p.featured);
+        setProject(featured ?? null);
+      } catch {
+        if (cancelled) return;
+        setProject(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadFeatured();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Yükleniyorken ya da featured proje yoksa bölümü tamamen gizle.
+  if (loading || !project) return null;
+
   return (
     <section className="relative bg-black py-20 md:py-28 border-t border-gray-800 overflow-hidden">
       {/* Background accent */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-500/5 to-transparent"></div>
-      
+
       <div className="max-w-7xl mx-auto px-8 md:px-16 relative">
         {/* Label */}
         <div className="flex items-center gap-3 mb-8">
@@ -15,31 +49,30 @@ const FeaturedProjectBanner = () => {
           {/* Left Content */}
           <div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight leading-tight">
-              NGO Digital
-              <span className="block gradient-text-accent">Transformation</span>
+              <span className="gradient-text-accent">{project.name}</span>
             </h2>
             <p className="text-gray-400 text-lg leading-relaxed max-w-xl mb-8">
-              A comprehensive digital infrastructure project for non-governmental organizations. 
-              Built scalable backend systems with Python and FastAPI, implemented containerized 
-              deployments using Docker, and established CI/CD pipelines for seamless delivery.
+              {project.description}
             </p>
 
             {/* Tech stack */}
-            <div className="flex flex-wrap gap-3 mb-10">
-              {['Python', 'FastAPI', 'Docker', 'PostgreSQL', 'CI/CD'].map((tech, index) => (
-                <span 
-                  key={tech} 
-                  className="px-4 py-2 bg-white/5 border border-gray-800 text-gray-300 text-sm rounded-full hover:bg-white/10 hover:border-gray-700 transition-all duration-300"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+            {(project.techStack ?? []).length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-10">
+                {project.techStack.map((tech, index) => (
+                  <span
+                    key={tech}
+                    className="px-4 py-2 bg-white/5 border border-gray-800 text-gray-300 text-sm rounded-full hover:bg-white/10 hover:border-gray-700 transition-all duration-300"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            )}
 
-            {/* Read More Link */}
-            <a 
-              href="/portfolio" 
+            {/* View Project Link */}
+            <Link
+              to={`/projects/${project.slug}`}
               className="inline-flex items-center group"
             >
               <span className="w-12 h-px bg-white mr-4 transition-all duration-300 group-hover:w-20 group-hover:bg-blue-400"></span>
@@ -49,15 +82,15 @@ const FeaturedProjectBanner = () => {
               <svg className="w-4 h-4 ml-2 text-white group-hover:text-blue-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </a>
+            </Link>
           </div>
 
-          {/* Right Side - Project Preview */}
+          {/* Right Side - Project Preview (dekoratif tasarım öğesi, backend verisi değil) */}
           <div className="hidden lg:flex justify-end">
             <div className="relative group">
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-transparent rounded-2xl blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
-              
+
               {/* Project card */}
               <div className="relative w-80 h-80 border border-gray-800 rounded-2xl p-6 bg-gradient-to-br from-gray-900/80 to-black backdrop-blur-sm card-hover">
                 {/* Terminal-style header */}
@@ -67,7 +100,7 @@ const FeaturedProjectBanner = () => {
                   <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                   <span className="text-gray-500 text-xs ml-2">main.py</span>
                 </div>
-                
+
                 {/* Code preview */}
                 <div className="font-mono text-sm space-y-2">
                   <div><span className="text-purple-400">from</span> <span className="text-blue-400">fastapi</span> <span className="text-purple-400">import</span> FastAPI</div>
@@ -95,7 +128,7 @@ const FeaturedProjectBanner = () => {
           </div>
         </div>
 
-        {/* Bottom stats */}
+        {/* Bottom stats (dekoratif tasarım öğesi, backend verisi değil) */}
         <div className="mt-16 pt-8 border-t border-gray-800/50 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             { value: '99.9%', label: 'Uptime' },

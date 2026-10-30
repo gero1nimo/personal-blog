@@ -1,18 +1,25 @@
-from fastapi import Depends, FastAPI, HTTPException
 from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from .api import api_router
-from app.db import db_engine
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
 from app.config import settings
+from app.core.rate_limit import limiter
+from app.db import db_engine
+from .api import api_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
     await db_engine.dispose()
 
+
 app = FastAPI(lifespan=lifespan)
-
-
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -22,8 +29,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
-async def root():
+@limiter.limit("1/2 per second")
+async def root(request: Request):
     return {"message": "Hello, World!"}
 
 

@@ -10,3 +10,4 @@ alembic
 asyncpg
 pyjwt
 pwdlib[argon2]
+slowapi

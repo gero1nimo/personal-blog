@@ -18,6 +18,7 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
 import app.models
+from app.core.rate_limit import limiter
 from app.core.security import hash_password, create_access_token
 from app.db import db_dependency
 from app.main import app
@@ -25,6 +26,25 @@ from app.models import User
 
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "test-password-123"
+
+
+@pytest.fixture(autouse=True)
+def disable_rate_limit():
+    """Hız sınırı testler arasında sayaç taşımasın: varsayılan kapalı, ilgili testler açar."""
+    limiter.reset()
+    limiter.enabled = False
+    yield
+    limiter.reset()
+    limiter.enabled = False
+
+
+@pytest.fixture
+def rate_limit_on():
+    limiter.reset()
+    limiter.enabled = True
+    yield
+    limiter.reset()
+    limiter.enabled = False
 
 
 @pytest.fixture(autouse=True)

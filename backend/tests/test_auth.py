@@ -122,14 +122,14 @@ def _admin_operations():
             for method in methods:
                 url = (path.replace("{project_id}", "1").replace("{blog_id}", "1")
                        .replace("{project_slug}", "x").replace("{blog_slug}", "x")
-                       .replace("{file_id}", "abc123"))
+                       .replace("{file_id}", "abc123").replace("{contact_id}", "1"))
                 ops.append((method.upper(), url))
     return ops
 
 
 def test_admin_operations_are_discovered():
     # taramanın boş geçip yanıltmaması için: blog + project, id + slug, tüm yöntemler
-    assert len(_admin_operations()) == 20   # blog 9 + project 9 + media 2
+    assert len(_admin_operations()) == 24   # blog 9 + project 9 + media 2 + contact 4
 
 
 @pytest.mark.parametrize("method,url", _admin_operations())

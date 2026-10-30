@@ -19,12 +19,6 @@ class BaseRepository(Generic[ModelType]):
         self.model = model
         self.session = session
 
-    def _before_save(self,
-                     obj: ModelType,
-                     changes: dict
-                     ) -> None:
-        pass
-
     async def get_page(self,
                        page: int,
                        size: int
@@ -162,3 +156,9 @@ class BaseRepository(Generic[ModelType]):
             slug = f"{base_slug}-{n}"
             n += 1
         return slug
+
+    def _before_save(self,
+                     obj: ModelType,
+                     changes: dict
+                     ) -> None:
+        pass
